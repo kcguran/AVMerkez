@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.avmerkez</groupId>
+    <artifactId>avmerkez-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging> <!-- Bu bir ana proje olduğu için packaging 'pom' olmalı -->
+    <name>AVMerkez Parent</name>
+    <description>Parent POM for AVMerkez Microservices Project</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- Her zaman en güncel kararlı Spring Boot ve Cloud sürümlerini hedefleyin -->
+        <!-- Güncel sürümleri https://start.spring.io/actuator/info adresinden kontrol edebilirsiniz -->
+        <spring-boot.version>3.2.5</spring-boot.version> <!-- Örnek sürüm, güncelleyin -->
+        <spring-cloud.version>2023.0.1</spring-cloud.version> <!-- Spring Boot 3.2.x ile uyumlu sürüm -->
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <!-- Alt modüllerin listesi -->
+    <modules>
+        <module>discovery-server</module>
+        <module>config-server</module>
+        <module>api-gateway</module>
+        <module>mall-service</module>
+        <!-- Diğer servisler eklendikçe buraya eklenecek -->
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot Bağımlılık Yönetimi -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Bağımlılık Yönetimi -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Spring Boot Maven Plugin (Çalıştırılabilir JAR oluşturmak için) -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal> <!-- Çalıştırılabilir JAR için -->
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Derleyici Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version> <!-- Güncel sürüm kontrol edilebilir -->
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+         <plugins>
+             <plugin>
+                 <groupId>org.springframework.boot</groupId>
+                 <artifactId>spring-boot-maven-plugin</artifactId>
+             </plugin>
+         </plugins>
+    </build>
+
+    <!-- Opsiyonel: Ortak konfigürasyonlar veya pluginler buraya eklenebilir -->
+
+</project> 

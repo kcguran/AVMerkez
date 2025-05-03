@@ -1,0 +1,34 @@
+# Server port for the Discovery Server
+server:
+  port: 8761 # Default Eureka port
+
+# Eureka Server Configuration
+eureka:
+  instance:
+    hostname: localhost # Use appropriate hostname in production/docker
+  client:
+    # Since this is the server itself, it shouldn't register with itself
+    register-with-eureka: false
+    # It also shouldn't fetch the registry from itself
+    fetch-registry: false
+    service-url:
+      # In a standalone setup, this points to itself (but it's disabled above)
+      # In a clustered setup, this would point to other Eureka nodes.
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    # Disable self-preservation mode for easier local development (optional)
+    # enable-self-preservation: false
+    # Eviction interval (optional)
+    # eviction-interval-timer-in-ms: 5000
+
+# Spring Application Name
+spring:
+  application:
+    name: discovery-server
+
+# Optional: Actuator endpoints configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info # Expose health and info endpoints 

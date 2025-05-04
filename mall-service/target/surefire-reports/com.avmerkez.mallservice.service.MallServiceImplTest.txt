@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.avmerkez.mallservice.service.MallServiceImplTest
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.401 s -- in com.avmerkez.mallservice.service.MallServiceImplTest

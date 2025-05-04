@@ -13,6 +13,9 @@
 !/target/classes/
 !/target/test-classes/
 
+*/target/classes/
+*/target/test-classes/
+
 # Maven
 *.pom.releaseBackup
 *.pom.versionsBackup
@@ -70,4 +73,7 @@ docker-compose.override.yml
 *.orig
 
 # Specific to this project (if any)
-# e.g., local config files not in repo 
+# e.g., local config files not in repo
+
+prd.md
+.cursor/

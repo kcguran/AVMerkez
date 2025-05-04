@@ -1,0 +1,35 @@
+name: Java CI Pipeline for AVMerkez
+
+on:
+  push:
+    branches: [ "main" ] # Ana branch'e push yapıldığında tetikle
+  pull_request:
+    branches: [ "main" ] # Ana branch'e pull request açıldığında/güncellendiğinde tetikle
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Pipeline'ın çalışacağı işletim sistemi
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Kodu repodan çek
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17' # Kullanılacak Java sürümü
+        distribution: 'temurin' # OpenJDK dağıtımı (temurin, zulu, adopt vb.)
+        cache: maven # Maven bağımlılıklarını cache'le
+
+    - name: Build and Test with Maven
+      # 'verify' lifecycle phase'ı, derleme, test ve paketleme adımlarını içerir.
+      # Integration testler de bu aşamada çalışır.
+      run: mvn -B verify --file pom.xml # -B: Batch mode (interaktif olmayan mod)
+
+    # İsteğe Bağlı: Test raporlarını upload etme
+    # - name: Upload Test Reports
+    #   if: always() # Testler başarısız olsa bile raporları yükle
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: test-reports
+    #     path: '**/target/surefire-reports/*.xml' # Surefire (unit test) raporlarının yolu 

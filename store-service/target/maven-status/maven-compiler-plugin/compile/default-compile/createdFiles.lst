@@ -1,0 +1,15 @@
+com\avmerkez\storeservice\mapper\StoreMapper.class
+com\avmerkez\storeservice\mapper\StoreMapperImpl.class
+com\avmerkez\storeservice\exception\GlobalExceptionHandler.class
+com\avmerkez\storeservice\dto\StoreDto.class
+com\avmerkez\storeservice\dto\CreateStoreRequest.class
+com\avmerkez\storeservice\dto\UpdateStoreRequest.class
+com\avmerkez\storeservice\service\StoreService.class
+com\avmerkez\storeservice\controller\StoreController.class
+com\avmerkez\storeservice\config\SecurityConfig.class
+com\avmerkez\storeservice\entity\Store.class
+com\avmerkez\storeservice\repository\StoreRepository.class
+com\avmerkez\storeservice\entity\Store$StoreBuilder.class
+com\avmerkez\storeservice\StoreServiceApplication.class
+com\avmerkez\storeservice\exception\ResourceNotFoundException.class
+com\avmerkez\storeservice\service\StoreServiceImpl.class

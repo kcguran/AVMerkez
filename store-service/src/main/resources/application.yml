@@ -1,0 +1,2 @@
+# This file can be empty or contain configurations that are NOT managed by the Config Server.
+# All primary configurations are expected to be fetched from the Spring Cloud Config Server. 

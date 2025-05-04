@@ -1,0 +1,15 @@
+com\avmerkez\mallservice\dto\UpdateMallRequest.class
+com\avmerkez\mallservice\mapper\MallMapperImpl.class
+com\avmerkez\mallservice\exception\ResourceNotFoundException.class
+com\avmerkez\mallservice\entity\Mall.class
+com\avmerkez\mallservice\repository\MallRepository.class
+com\avmerkez\mallservice\dto\CreateMallRequest.class
+com\avmerkez\mallservice\config\SecurityConfig.class
+com\avmerkez\mallservice\MallServiceApplication.class
+com\avmerkez\mallservice\mapper\MallMapper.class
+com\avmerkez\mallservice\service\MallService.class
+com\avmerkez\mallservice\dto\MallDto.class
+com\avmerkez\mallservice\service\MallServiceImpl.class
+com\avmerkez\mallservice\entity\Mall$MallBuilder.class
+com\avmerkez\mallservice\controller\MallController.class
+com\avmerkez\mallservice\exception\GlobalExceptionHandler.class

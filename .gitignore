@@ -1,0 +1,73 @@
+### Java ###
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Compiled output
+/target/
+!/target/classes/
+!/target/test-classes/
+
+# Maven
+*.pom.releaseBackup
+*.pom.versionsBackup
+*.pom.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### IDE ###
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+### OS Generated Files ###
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+### Docker ###
+docker-compose.override.yml
+
+### Testcontainers ###
+.testcontainers.properties
+
+### Other ###
+/logs/
+/dist/
+/node_modules/
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+*.orig
+
+# Specific to this project (if any)
+# e.g., local config files not in repo 

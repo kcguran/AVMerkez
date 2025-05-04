@@ -1,0 +1,20 @@
+# Bootstrap configurations - loaded before application.yml
+
+spring:
+  application:
+    # Service name - MUST match the config file name (e.g., store-service.yml) and Eureka ID
+    name: store-service # Değişti
+  cloud:
+    config:
+      # URI of the Config Server
+      uri: http://localhost:8888
+      # profile: default # Default profile
+      label: main # Git branch/tag
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-interval: 2000
+        max-attempts: 6
+  # Explicitly import configuration from Config Server
+  config:
+    import: "configserver:${spring.cloud.config.uri}" 

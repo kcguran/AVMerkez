@@ -29,6 +29,7 @@
         <module>config-server</module>
         <module>api-gateway</module>
         <module>mall-service</module>
+        <module>store-service</module>
         <!-- Diğer servisler eklendikçe buraya eklenecek -->
     </modules>
 
@@ -51,6 +52,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Flyway PostgreSQL - Versiyonu merkezi olarak yönetelim -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>10.6.0</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -79,7 +88,14 @@
                         <source>${java.version}</source>
                         <target>${java.version}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
+                        <parameters>true</parameters> <!-- Parametre isimlerini bytecode'a ekle -->
                     </configuration>
+                </plugin>
+                <!-- Surefire Plugin (Testleri çalıştırmak için) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.1.2</version> <!-- Belirli bir versiyonu deneyelim -->
                 </plugin>
             </plugins>
         </pluginManagement>

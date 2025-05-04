@@ -1,6 +1,6 @@
 # AVMerkez Projesi - Ürün Gereksinim Dokümanı (PRD)
 
-**Versiyon:** 0.2
+**Versiyon:** 0.4
 **Tarih:** {CurrentDate}
 
 ## 1. Proje Adı ve Tanımı
@@ -133,25 +133,61 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 
 ### Yapılacaklar (To Do)
 
-*   [ ] Proje iskeletinin oluşturulması (Maven/Gradle).
-*   [ ] Temel altyapı servislerinin kurulumu ve konfigürasyonu (API Gateway, Service Discovery, Config Server).
-*   [ ] Docker ve Docker Compose yapılandırması.
-*   [ ] Temel CI/CD pipeline kurulumu.
-*   [ ] `AVM Servisi` V1 geliştirilmesi (CRUD, Temel Listeleme).
-*   [ ] `Mağaza Servisi` V1 geliştirilmesi (CRUD, AVM'ye göre listeleme).
-*   [ ] `Kullanıcı Servisi` V1 geliştirilmesi (Kayıt, Login - JWT).
-*   [ ] `Kategori Servisi` V1 geliştirilmesi (CRUD).
-*   [ ] `Marka Servisi` V1 geliştirilmesi (CRUD).
-*   [ ] Mikroservisler arası temel iletişimin sağlanması (REST).
-*   [ ] Global Exception Handling mekanizmasının implementasyonu.
-*   [ ] Temel Spring Security yapılandırması.
-*   [ ] PostgreSQL veritabanı şemalarının tasarlanması (Her servis için ayrı).
-*   [ ] Veritabanı migration aracı entegrasyonu (Flyway/Liquibase).
-*   [ ] Birim ve entegrasyon testlerinin yazılması (İlk servisler için).
-*   [ ] Loglama altyapısının yapılandırılması.
-*   [ ] API dokümantasyonu için Springdoc OpenAPI entegrasyonu.
+**Altyapı ve Kurulum:**
+*   [x] Temel altyapı servislerinin entegrasyon testi (Docker Compose ile ayağa kaldırıldı, temel endpointler çalışıyor).
+*   [ ] Loglama altyapısının yapılandırılması ve merkezi loglamaya hazırlık.
+*   [x] Veritabanı migration aracı entegrasyonu (`mall-service` ve `store-service` için Flyway eklendi).
+
+**Güvenlik:**
+*   [ ] `Kullanıcı Servisi` V1 geliştirilmesi (Kayıt, Login - JWT üretimi).
+*   [ ] API Gateway'de JWT doğrulama filtresi implementasyonu.
+*   [ ] Mikroservislerde JWT yetkilendirme implementasyonu.
+*   [ ] Güvenlik testleri.
+
+**AVM Servisi (`mall-service`):**
+*   [x] Repository katmanı entegrasyon testleri (@DataJpaTest, Testcontainers).
+*   [x] Controller katmanı entegrasyon testleri (@SpringBootTest, Testcontainers).
+*   [x] Service katmanı birim testleri (Mockito).
+*   [x] Controller testlerindeki `500` hataları çözüldü (`-parameters` flag eklendi).
+*   [x] Kod iyileştirmeleri yapıldı (@Transactional, Test detayları, Entity, Controller yanıtları, Hata yönetimi).
+*   [ ] API dokümantasyonu (SpringDoc) detaylandırılması.
+*   [ ] Konum bazlı sorgular için altyapı (PostGIS?) ve implementasyon.
+*   [ ] PRD'deki diğer `Mall` entity alanlarının eklenmesi ve ilgili CRUD güncellemeleri.
+
+**Mağaza Servisi (`store-service`):**
+*   [x] `store-service` modülünün oluşturulması.
+*   [x] Entity, DTO, Mapper, Repository, Service, Controller V1 (Temel CRUD).
+*   [ ] `mall-service` ile iletişim kurarak `mallId` validasyonu ekleme (FeignClient).
+*   [ ] Birim ve entegrasyon testleri.
+
+**Diğer Servisler (İlerleyen Aşamalar):**
+*   [ ] `Kategori Servisi` V1 geliştirilmesi.
+*   [ ] `Marka Servisi` V1 geliştirilmesi.
+*   [ ] `Yorum Servisi` V1 geliştirilmesi.
+*   [ ] `Kampanya ve Etkinlik Servisi` V1 geliştirilmesi.
+*   [ ] Servisler arası iletişim implementasyonu (Feign Client veya `RestTemplate`).
 
 ### Yapılanlar (Done)
 
 *   [x] PRD v0.1 oluşturuldu.
 *   [x] PRD v0.2 detaylandırıldı.
+*   [x] PRD v0.3 detaylandırıldı (Yapılacaklar gruplandı).
+*   [x] Ana Maven `pom.xml` oluşturuldu.
+*   [x] `discovery-server` modülü oluşturuldu.
+*   [x] `config-server` modülü oluşturuldu.
+*   [x] `api-gateway` modülü oluşturuldu (Temel Security dahil).
+*   [x] `mall-service` modülü oluşturuldu (Temel Security, Flyway dahil).
+*   [x] Merkezi konfigürasyon için Git repo yapısı ve örnek dosyalar tanımlandı.
+*   [x] İstemci servislerinde `bootstrap.yml` kullanımı ve `spring.config.import` ayarlandı.
+*   [x] `docker-compose.yml` dosyası oluşturuldu ve güncellendi (Postgres init, store-service).
+*   [x] Mikroservisler için `Dockerfile`'lar oluşturuldu.
+*   [x] `mall-service` için temel Entity, DTO, Mapper, Repository, Service, Controller ve Exception sınıfları oluşturuldu.
+*   [x] `mall-service` için Service katmanı birim testleri (Mockito) eklendi.
+*   [x] `mall-service` için Controller katmanı entegrasyon testleri (@SpringBootTest, Testcontainers) eklendi.
+*   [x] `mall-service` için Repository katmanı entegrasyon testleri (@DataJpaTest, Testcontainers) eklendi.
+*   [x] `mall-service` için Controller test hataları çözüldü.
+*   [x] `mall-service` kod iyileştirmeleri yapıldı.
+*   [x] `mall-service` için Flyway entegrasyonu yapıldı.
+*   [x] Temel GitHub Actions CI pipeline (derleme ve test) oluşturuldu.
+*   [x] `store-service` modülü oluşturuldu (Temel Security, Flyway dahil).
+*   [x] `store-service` için temel Entity, DTO, Mapper, Repository, Service, Controller ve Exception sınıfları oluşturuldu.

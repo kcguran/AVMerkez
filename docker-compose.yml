@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15 # Güncel PostgreSQL sürümünü kullanabilirsiniz
+    container_name: postgres_db
+    environment:
+      # POSTGRES_DB: mall_db # Initial DB, script ile oluşturulacak
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d # init scriptlerini mount et
+    ports:
+      - "5432:5432" # Lokal erişim için (opsiyonel)
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mall_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Discovery Server (Eureka)
+  discovery-server:
+    build:
+      context: ./discovery-server # Modülün konumu
+      dockerfile: Dockerfile # Eğer modül içinde Dockerfile varsa (aşağıda oluşturacağız)
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s # Başlangıç için ek süre
+
+  # Config Server
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      # Docker network içinde discovery server'a ulaşmak için servis adını kullanın
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      # Config server'ın Git deposuna erişimi olmalı (eğer private ise SSH key mount edilebilir)
+    depends_on:
+      discovery-server:
+        condition: service_healthy # Discovery server sağlıklı olmadan başlamasın
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # Config ve Discovery server adreslerini override edelim
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 50s
+
+  # Mall Service
+  mall-service:
+    build:
+      context: ./mall-service
+      dockerfile: Dockerfile
+    container_name: mall-service
+    # ports: # Rastgele port atandığı için maplemeye gerek yok, gateway üzerinden erişilecek
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      # Veritabanı bağlantı bilgilerini override edelim (Config Server'dan da alabilir)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mall_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - avmerkez-network
+    healthcheck:
+      # Not: port 0 olduğu için healthcheck path'i doğrudan kullanılamaz.
+      # Actuator portu farklıysa veya yönetim portu sabitse o kullanılabilir.
+      # Şimdilik basit bir process check yapabiliriz veya Actuator'ü sabit bir porta alabiliriz.
+      # test: ["CMD", "curl", "-f", "http://localhost:????/actuator/health"] # Port belirsiz
+      test: ["CMD-SHELL", "pidof java || exit 1"] # Sadece process var mı kontrolü
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # Store Service
+  store-service:
+    build:
+      context: ./store-service
+      dockerfile: Dockerfile
+    container_name: store-service
+    environment:
+      SPRING_APPLICATION_NAME: store-service # bootstrap.yml'deki ile aynı olmalı
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      # DB bilgileri config server'dan (store-service.yml) gelecek
+      # SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/store_db
+      # SPRING_DATASOURCE_USERNAME: user
+      # SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD-SHELL", "pidof java || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 70s # Diğerlerinden sonra başlasın
+
+# Volumes Definition
+volumes:
+  postgres_data:
+    driver: local
+
+# Network Definition
+networks:
+  avmerkez-network:
+    driver: bridge 

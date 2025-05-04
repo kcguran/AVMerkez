@@ -1,0 +1,3 @@
+com\avmerkez\storeservice\repository\StoreRepositoryIntegrationTest.class
+com\avmerkez\storeservice\controller\StoreControllerIntegrationTest.class
+com\avmerkez\storeservice\service\StoreServiceImplTest.class

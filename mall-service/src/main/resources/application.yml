@@ -4,9 +4,6 @@
 # 1. bootstrap.yml (for config server connection and application name)
 # 2. Git Repository (application.yml and mall-service.yml)
 
-# Server port (can be randomized or set via config server)
-server:
-  port: 0 # Assign a random available port, good practice for microservices
 
 # Spring Application Name (MUST match the name used in gateway/discovery)
 spring:
@@ -60,7 +57,7 @@ eureka:
     register-with-eureka: true
   instance:
     # Use instance ID with random value to allow multiple instances on the same host
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    # instance-id: ${spring.application.name}:${server.port}
     prefer-ip-address: true
 
 # Springdoc OpenAPI Configuration

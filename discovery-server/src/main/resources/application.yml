@@ -15,11 +15,6 @@ eureka:
       # In a standalone setup, this points to itself (but it's disabled above)
       # In a clustered setup, this would point to other Eureka nodes.
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
-  server:
-    # Disable self-preservation mode for easier local development (optional)
-    # enable-self-preservation: false
-    # Eviction interval (optional)
-    # eviction-interval-timer-in-ms: 5000
 
 # Spring Application Name
 spring:

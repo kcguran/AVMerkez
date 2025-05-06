@@ -6,10 +6,19 @@ import com.avmerkez.mallservice.dto.UpdateMallRequest;
 
 import java.util.List;
 
+/**
+ * Service interface for managing Malls.
+ */
 public interface MallService {
+
+
     MallDto createMall(CreateMallRequest createMallRequest);
+
     MallDto getMallById(Long id);
-    List<MallDto> getAllMalls();
+
+    List<MallDto> getAllMalls(String city, String district);
+
     MallDto updateMall(Long id, UpdateMallRequest updateMallRequest);
+
     void deleteMall(Long id);
 } 

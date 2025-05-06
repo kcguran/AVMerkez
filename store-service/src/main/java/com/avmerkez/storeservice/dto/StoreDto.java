@@ -11,7 +11,7 @@ public class StoreDto {
     private Long id;
     private Long mallId;
     private String name;
-    private String category;
+    private Long categoryId;
     private String floor;
     private String storeNumber;
 } 

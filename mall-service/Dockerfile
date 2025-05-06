@@ -1,6 +1,9 @@
 # Use a standard OpenJDK 17 slim image
 FROM openjdk:17-jdk-slim
 
+# Install curl and git for healthcheck and config repo access
+RUN apt-get update && apt-get install -y curl git --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory inside the container
 WORKDIR /app
 

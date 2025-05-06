@@ -17,7 +17,7 @@ public class CreateStoreRequest {
     @NotBlank(message = "Store name cannot be blank")
     private String name;
 
-    private String category;
+    private Long categoryId;
 
     @NotBlank(message = "Floor cannot be blank")
     private String floor;

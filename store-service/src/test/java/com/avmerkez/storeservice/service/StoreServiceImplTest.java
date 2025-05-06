@@ -7,6 +7,11 @@ import com.avmerkez.storeservice.entity.Store;
 import com.avmerkez.storeservice.exception.ResourceNotFoundException;
 import com.avmerkez.storeservice.mapper.StoreMapper;
 import com.avmerkez.storeservice.repository.StoreRepository;
+import com.avmerkez.storeservice.client.MallServiceClient;
+import com.avmerkez.storeservice.exception.InvalidInputException;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +42,8 @@ class StoreServiceImplTest {
     @Mock
     private StoreMapper storeMapper;
 
-    // TODO: Add mock for Feign Client later
-    // @Mock
-    // private MallServiceClient mallServiceClient;
+    @Mock
+    private MallServiceClient mallServiceClient;
 
     @InjectMocks // Inject mocks into this instance
     private StoreServiceImpl storeService;
@@ -54,22 +59,24 @@ class StoreServiceImplTest {
                 .id(1L)
                 .mallId(10L)
                 .name("Test Store")
-                .category("Test Category")
+                .categoryId(1L)
                 .floor("Test Floor")
                 .storeNumber("T-1")
                 .build();
 
-        storeDto = new StoreDto(1L, 10L, "Test Store", "Test Category", "Test Floor", "T-1");
+        storeDto = new StoreDto(1L, 10L, "Test Store", 1L, "Test Floor", "T-1");
 
-        createStoreRequest = new CreateStoreRequest(10L, "New Store", "New Category", "New Floor", "N-1");
-        updateStoreRequest = new UpdateStoreRequest("Updated Store", "Updated Category", "Updated Floor", "U-1");
+        createStoreRequest = new CreateStoreRequest(10L, "New Store", 2L, "New Floor", "N-1");
+        updateStoreRequest = new UpdateStoreRequest("Updated Store", 3L, "Updated Floor", "U-1");
     }
 
     @Test
     @DisplayName("Create store successfully")
-    void createStore_ShouldReturnStoreDto() {
+    void createStore_ShouldReturnStoreDto_WhenMallIdIsValid() {
         // Given
-        // TODO: Mock Feign client call later
+        Long validMallId = createStoreRequest.getMallId();
+        given(mallServiceClient.checkMallExists(validMallId)).willReturn(ResponseEntity.ok().build());
+
         given(storeMapper.createRequestToStore(createStoreRequest)).willReturn(store); // Use store for simplicity here
         given(storeRepository.save(any(Store.class))).willReturn(store);
         given(storeMapper.toStoreDto(store)).willReturn(storeDto);
@@ -80,7 +87,62 @@ class StoreServiceImplTest {
         // Then
         assertThat(createdDto).isNotNull();
         assertThat(createdDto.getName()).isEqualTo(storeDto.getName());
+        verify(mallServiceClient, times(1)).checkMallExists(validMallId);
         verify(storeRepository, times(1)).save(any(Store.class));
+    }
+
+    @Test
+    @DisplayName("Create store should throw InvalidInputException when Mall ID is null")
+    void createStore_ShouldThrowException_WhenMallIdIsNull() {
+        // Given
+        createStoreRequest.setMallId(null);
+
+        // When & Then
+        assertThrows(InvalidInputException.class, () -> {
+            storeService.createStore(createStoreRequest);
+        });
+
+        verify(mallServiceClient, never()).checkMallExists(anyLong());
+        verify(storeRepository, never()).save(any(Store.class));
+    }
+
+    @Test
+    @DisplayName("Create store should throw InvalidInputException when Mall ID does not exist")
+    void createStore_ShouldThrowException_WhenMallIdNotFound() {
+        // Given
+        Long invalidMallId = 999L;
+        createStoreRequest.setMallId(invalidMallId);
+        // Mock Feign client call to throw NotFound exception
+        Request dummyRequest = Request.create(Request.HttpMethod.GET, "/api/v1/malls/" + invalidMallId, Collections.emptyMap(), null, new RequestTemplate());
+        given(mallServiceClient.checkMallExists(invalidMallId))
+                .willThrow(new FeignException.NotFound("Mall not found", dummyRequest, null, null));
+
+        // When & Then
+        assertThrows(InvalidInputException.class, () -> {
+            storeService.createStore(createStoreRequest);
+        });
+
+        verify(mallServiceClient, times(1)).checkMallExists(invalidMallId);
+        verify(storeRepository, never()).save(any(Store.class));
+    }
+
+    @Test
+    @DisplayName("Create store should throw RuntimeException for other Feign errors")
+    void createStore_ShouldThrowRuntimeException_WhenFeignErrorOccurs() {
+        // Given
+        Long mallId = createStoreRequest.getMallId();
+        // Mock Feign client call to throw a generic FeignException
+        Request dummyRequest = Request.create(Request.HttpMethod.GET, "/api/v1/malls/" + mallId, Collections.emptyMap(), null, new RequestTemplate());
+        given(mallServiceClient.checkMallExists(mallId))
+                .willThrow(new FeignException.InternalServerError("Server error", dummyRequest, null, null));
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> {
+            storeService.createStore(createStoreRequest);
+        });
+
+        verify(mallServiceClient, times(1)).checkMallExists(mallId);
+        verify(storeRepository, never()).save(any(Store.class));
     }
 
     @Test
@@ -117,7 +179,7 @@ class StoreServiceImplTest {
         given(storeMapper.toStoreDtoList(Collections.singletonList(store))).willReturn(Collections.singletonList(storeDto));
 
         // When
-        List<StoreDto> stores = storeService.getStoresByMallId(10L);
+        List<StoreDto> stores = storeService.getAllStores(10L);
 
         // Then
         assertThat(stores).isNotEmpty();
@@ -132,7 +194,7 @@ class StoreServiceImplTest {
         given(storeMapper.toStoreDtoList(Collections.emptyList())).willReturn(Collections.emptyList());
 
         // When
-        List<StoreDto> stores = storeService.getStoresByMallId(99L);
+        List<StoreDto> stores = storeService.getAllStores(99L);
 
         // Then
         assertThat(stores).isEmpty();

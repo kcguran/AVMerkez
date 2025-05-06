@@ -12,52 +12,26 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-                properties = {"spring.security.enabled=false",
-                              "spring.cloud.bootstrap.enabled=false"}) // Disable security & bootstrap
-@AutoConfigureMockMvc
-@Testcontainers
-@Import(GlobalExceptionHandler.class) // Exception handler'ı test context'ine dahil et
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@WebMvcTest(StoreController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(GlobalExceptionHandler.class)
 class StoreControllerIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("test_store_db")
-            .withUsername("testuser")
-            .withPassword("testpass");
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
-        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
-        registry.add("spring.flyway.url", postgreSQLContainer::getJdbcUrl);
-        registry.add("spring.flyway.user", postgreSQLContainer::getUsername);
-        registry.add("spring.flyway.password", postgreSQLContainer::getPassword);
-    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -77,9 +51,9 @@ class StoreControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        storeDto = new StoreDto(STORE_ID, MALL_ID, "Test Store", "Electronics", "1st Floor", "A-101");
-        createStoreRequest = new CreateStoreRequest(MALL_ID, "Test Store", "Electronics", "1st Floor", "A-101");
-        updateStoreRequest = new UpdateStoreRequest("Updated Store", "Updated Electronics", "Ground Floor", "G-05");
+        storeDto = new StoreDto(STORE_ID, MALL_ID, "Test Store", 1L, "1st Floor", "A-101");
+        createStoreRequest = new CreateStoreRequest(MALL_ID, "Test Store", 1L, "1st Floor", "A-101");
+        updateStoreRequest = new UpdateStoreRequest("Updated Store", 2L, "Ground Floor", "G-05");
     }
 
     @Test
@@ -98,7 +72,7 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Create store - Invalid Request (Blank Name)")
     void createStore_ShouldReturnBadRequest_WhenNameIsBlank() throws Exception {
-        CreateStoreRequest invalidRequest = new CreateStoreRequest(MALL_ID, "", "Electronics", "1st Floor", "A-101");
+        CreateStoreRequest invalidRequest = new CreateStoreRequest(MALL_ID, "", 1L, "1st Floor", "A-101");
 
         mockMvc.perform(post("/stores")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -130,9 +104,9 @@ class StoreControllerIntegrationTest {
     @DisplayName("Get stores by Mall ID - Found")
     void getStoresByMallId_ShouldReturnStoreList() throws Exception {
         List<StoreDto> storeList = Collections.singletonList(storeDto);
-        given(storeService.getStoresByMallId(MALL_ID)).willReturn(storeList);
+        given(storeService.getAllStores(MALL_ID)).willReturn(storeList);
 
-        mockMvc.perform(get("/malls/{mallId}/stores", MALL_ID))
+        mockMvc.perform(get("/stores").param("mallId", MALL_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].mallId", is(MALL_ID.intValue())));
@@ -141,9 +115,9 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Get stores by Mall ID - Not Found")
     void getStoresByMallId_ShouldReturnEmptyList() throws Exception {
-        given(storeService.getStoresByMallId(NON_EXISTING_ID)).willReturn(Collections.emptyList());
+        given(storeService.getAllStores(NON_EXISTING_ID)).willReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/malls/{mallId}/stores", NON_EXISTING_ID))
+        mockMvc.perform(get("/stores").param("mallId", NON_EXISTING_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -151,7 +125,7 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Update store - Valid Request")
     void updateStore_ShouldReturnOk() throws Exception {
-        StoreDto updatedDto = new StoreDto(STORE_ID, MALL_ID, updateStoreRequest.getName(), updateStoreRequest.getCategory(), updateStoreRequest.getFloor(), updateStoreRequest.getStoreNumber());
+        StoreDto updatedDto = new StoreDto(STORE_ID, MALL_ID, updateStoreRequest.getName(), updateStoreRequest.getCategoryId(), updateStoreRequest.getFloor(), updateStoreRequest.getStoreNumber());
         given(storeService.updateStore(eq(STORE_ID), any(UpdateStoreRequest.class))).willReturn(updatedDto);
 
         mockMvc.perform(put("/stores/{id}", STORE_ID)

@@ -45,4 +45,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, env, configprops # Expose useful endpoints 
+        include: health, info, env, configprops # Expose useful endpoints
+  # Micrometer Tracing Configuration
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: B3 

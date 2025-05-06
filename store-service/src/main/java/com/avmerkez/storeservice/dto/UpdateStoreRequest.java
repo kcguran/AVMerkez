@@ -10,10 +10,8 @@ import lombok.AllArgsConstructor;
 public class UpdateStoreRequest {
     // Güncelleme için alanlar
     private String name;
-    // categoryId yerine category
-    private String category;
+    private Long categoryId;
     private String floor;
-    // storeNo yerine storeNumber
     private String storeNumber;
 
     // private Long brandId;

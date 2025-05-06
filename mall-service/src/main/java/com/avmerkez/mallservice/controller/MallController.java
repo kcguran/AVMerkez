@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -53,8 +52,8 @@ public class MallController {
     @GetMapping
     @Operation(summary = "Get all malls")
     @ApiResponse(responseCode = "200", description = "List of malls")
-    public ResponseEntity<List<MallDto>> getAllMalls() {
-        List<MallDto> malls = mallService.getAllMalls();
+    public ResponseEntity<List<MallDto>> getAllMalls(@RequestParam(required = false) String city, @RequestParam(required = false) String district) {
+        List<MallDto> malls = mallService.getAllMalls(city, district);
         return ResponseEntity.ok(malls);
     }
 

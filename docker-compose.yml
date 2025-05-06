@@ -33,7 +33,7 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8761/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -57,7 +57,7 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8888/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -83,7 +83,7 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -113,11 +113,8 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      # Not: port 0 olduğu için healthcheck path'i doğrudan kullanılamaz.
-      # Actuator portu farklıysa veya yönetim portu sabitse o kullanılabilir.
-      # Şimdilik basit bir process check yapabiliriz veya Actuator'ü sabit bir porta alabiliriz.
-      # test: ["CMD", "curl", "-f", "http://localhost:????/actuator/health"] # Port belirsiz
-      test: ["CMD-SHELL", "pidof java || exit 1"] # Sadece process var mı kontrolü
+      # Actuator endpoint'ini kontrol et
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -147,11 +144,39 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD-SHELL", "pidof java || exit 1"]
+      # Actuator endpoint'ini kontrol et
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 70s # Diğerlerinden sonra başlasın
+
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      SPRING_APPLICATION_NAME: user-service
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      # DB and JWT secrets will be fetched from Config Server (user-service.yml)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - avmerkez-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health"] # Default port, adjust if needed
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 80s # Start after store service
 
 # Volumes Definition
 volumes:

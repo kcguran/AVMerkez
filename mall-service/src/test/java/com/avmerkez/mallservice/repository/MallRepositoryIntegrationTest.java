@@ -5,8 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -18,9 +18,14 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest // Sadece JPA bileşenlerini ve H2 (varsayılan) veya Testcontainers DB'yi yükler
-@Testcontainers // Testcontainers entegrasyonunu etkinleştirir
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Gömülü H2 yerine Testcontainers DB kullanılacağını belirtir
+@SpringBootTest(properties = {
+                    "spring.cloud.config.fail-fast=false", // Explicitly disable fail-fast for config client in tests
+                    "spring.cloud.bootstrap.enabled=false", // Disable bootstrap context for tests
+                    "spring.config.import=", // Override/disable config server import for tests
+                    // "spring.cloud.config.enabled=false"  // application.properties dosyasından yüklenecek
+                })
+@ActiveProfiles("test")
+@Testcontainers
 class MallRepositoryIntegrationTest {
 
     // PostgreSQL container'ını tanımla
@@ -36,7 +41,13 @@ class MallRepositoryIntegrationTest {
         // Flyway'i bu test için devre dışı bırakabiliriz veya çalıştırabiliriz.
         // Şimdilik Hibernate'in ddl-auto'sunu (testte create-drop olur genelde) kullanabiliriz.
         // registry.add("spring.flyway.enabled", () -> "false"); // Opsiyonel
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop"); // Test için şemayı oluştur/bırak
+        // registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop"); // Test için şemayı oluştur/bırak
+        // Flyway ayarlarını ekle
+        registry.add("spring.flyway.url", postgres::getJdbcUrl);
+        registry.add("spring.flyway.user", postgres::getUsername);
+        registry.add("spring.flyway.password", postgres::getPassword);
+        registry.add("spring.flyway.enabled", () -> "true"); // Flyway'i etkinleştir
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate"); // Hibernate'in şemayı değiştirmesini engelle, Flyway yapsın
     }
 
     @Autowired

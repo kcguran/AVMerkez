@@ -53,21 +53,21 @@ class StoreRepositoryIntegrationTest {
         store1Mall1 = Store.builder()
                 .mallId(1L)
                 .name("Store A")
-                .category("Electronics")
+                .categoryId(1L)
                 .floor("1st Floor")
                 .storeNumber("A-101")
                 .build();
         store2Mall1 = Store.builder()
                 .mallId(1L)
                 .name("Store B")
-                .category("Clothing")
+                .categoryId(2L)
                 .floor("Ground Floor")
                 .storeNumber("G-05")
                 .build();
         store1Mall2 = Store.builder()
                 .mallId(2L)
                 .name("Store C")
-                .category("Electronics")
+                .categoryId(1L)
                 .floor("2nd Floor")
                 .storeNumber("B-210")
                 .build();
@@ -104,7 +104,7 @@ class StoreRepositoryIntegrationTest {
         Store newStore = Store.builder()
                 .mallId(3L)
                 .name("New Store")
-                .category("Books")
+                .categoryId(3L)
                 .floor("Basement")
                 .storeNumber("BS-01")
                 .build();

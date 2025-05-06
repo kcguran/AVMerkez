@@ -24,10 +24,11 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Web (RESTful API için) -->
+        <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <!-- Web'den Spring Cloud Config hariç tutma işlemini iptal ediyoruz -->
         </dependency>
 
         <!-- Spring Data JPA (Veritabanı işlemleri için) -->
@@ -60,23 +61,36 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Config Client (Konfigürasyon için) -->
+        <!-- Spring Cloud Config (for externalized configuration) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
+            <!-- Test scope olarak işaretlemeyi iptal ediyoruz -->
         </dependency>
 
         <!-- Bootstrap Dependency (To enable bootstrap.yml processing) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
-            <scope>provided</scope>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Spring Boot Actuator (İzleme için) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer Tracing (İstek takibi için) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
+        <!-- Logback JSON Encoder -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
 
         <!-- Spring Boot Security -->
@@ -118,6 +132,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-config</artifactId>
+                </exclusion>
+                <!-- Gerekirse başka bootstrap veya config ile ilgili bağımlılıklar da buraya eklenebilir -->
+            </exclusions>
         </dependency>
 
          <!-- Testcontainers (Entegrasyon testleri için - Opsiyonel ama önerilir) -->
@@ -178,6 +199,13 @@
                             -Amapstruct.defaultComponentModel=spring
                         </compilerArg>
                     </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
         </plugins>

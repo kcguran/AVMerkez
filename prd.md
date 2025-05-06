@@ -134,38 +134,33 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 ### Yapılacaklar (To Do)
 
 **Altyapı ve Kurulum:**
-*   [x] Temel altyapı servislerinin entegrasyon testi (Docker Compose ile ayağa kaldırıldı, temel endpointler çalışıyor).
-*   [ ] Loglama altyapısının yapılandırılması ve merkezi loglamaya hazırlık.
-*   [x] Veritabanı migration aracı entegrasyonu (`mall-service` ve `store-service` için Flyway eklendi).
+*   [ ] Merkezi loglama sistemine (örn: ELK, Loki) log gönderimi konfigürasyonu.
 
 **Güvenlik:**
-*   [ ] `Kullanıcı Servisi` V1 geliştirilmesi (Kayıt, Login - JWT üretimi).
+*   [ ] `Kullanıcı Servisi` V1 temel altyapısı oluşturuldu (Entity, Repo, Security Config, JWT Utils), ancak ilk etapta Register/Login endpointleri **kaldırıldı**.
 *   [ ] API Gateway'de JWT doğrulama filtresi implementasyonu.
 *   [ ] Mikroservislerde JWT yetkilendirme implementasyonu.
 *   [ ] Güvenlik testleri.
 
 **AVM Servisi (`mall-service`):**
-*   [x] Repository katmanı entegrasyon testleri (@DataJpaTest, Testcontainers).
-*   [x] Controller katmanı entegrasyon testleri (@SpringBootTest, Testcontainers).
-*   [x] Service katmanı birim testleri (Mockito).
-*   [x] Controller testlerindeki `500` hataları çözüldü (`-parameters` flag eklendi).
-*   [x] Kod iyileştirmeleri yapıldı (@Transactional, Test detayları, Entity, Controller yanıtları, Hata yönetimi).
 *   [ ] API dokümantasyonu (SpringDoc) detaylandırılması.
 *   [ ] Konum bazlı sorgular için altyapı (PostGIS?) ve implementasyon.
 *   [ ] PRD'deki diğer `Mall` entity alanlarının eklenmesi ve ilgili CRUD güncellemeleri.
+*   [ ] `getAllMalls` için filtreleme implementasyonu.
 
 **Mağaza Servisi (`store-service`):**
-*   [x] `store-service` modülünün oluşturulması.
-*   [x] Entity, DTO, Mapper, Repository, Service, Controller V1 (Temel CRUD).
-*   [ ] `mall-service` ile iletişim kurarak `mallId` validasyonu ekleme (FeignClient).
-*   [ ] Birim ve entegrasyon testleri.
+*   [ ] `updateStore` metodunda `mallId` validasyonu (FeignClient) ekleme (opsiyonel).
+*   [ ] Feign Client için hata yönetimi (örn: Resilience4J - Circuit Breaker, Retry) ekleme.
+*   [ ] Service katmanı birim testlerini detaylandırma/tamamlama.
+*   [ ] Repository katmanı entegrasyon testlerini detaylandırma/tamamlama.
+*   [ ] API dokümantasyonu (SpringDoc) ekleme/detaylandırma.
+*   [ ] PRD'deki diğer `Store` entity alanlarının eklenmesi ve ilgili CRUD/test güncellemeleri.
 
 **Diğer Servisler (İlerleyen Aşamalar):**
 *   [ ] `Kategori Servisi` V1 geliştirilmesi.
 *   [ ] `Marka Servisi` V1 geliştirilmesi.
 *   [ ] `Yorum Servisi` V1 geliştirilmesi.
 *   [ ] `Kampanya ve Etkinlik Servisi` V1 geliştirilmesi.
-*   [ ] Servisler arası iletişim implementasyonu (Feign Client veya `RestTemplate`).
 
 ### Yapılanlar (Done)
 
@@ -191,3 +186,28 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   [x] Temel GitHub Actions CI pipeline (derleme ve test) oluşturuldu.
 *   [x] `store-service` modülü oluşturuldu (Temel Security, Flyway dahil).
 *   [x] `store-service` için temel Entity, DTO, Mapper, Repository, Service, Controller ve Exception sınıfları oluşturuldu.
+*   [x] `store-service` Entity (`Store`) ve DTO'lar (`StoreDto`, `CreateStoreRequest`, `UpdateStoreRequest`) `categoryId` kullanacak şekilde güncellendi.
+*   [x] `store-service` Test kodları (`StoreControllerIntegrationTest`, `StoreServiceImplTest`, `StoreRepositoryIntegrationTest`) `categoryId` kullanacak şekilde güncellendi.
+*   [x] `store-service` `GlobalExceptionHandler` içinde `MethodArgumentNotValidException` handler'ı aktif edildi.
+*   [x] `store-service` Controller entegrasyon testlerindeki `ApplicationContext` yükleme ve HTTP 401/403 hataları çözüldü (@WebMvcTest, @AutoConfigureMockMvc(addFilters=false)).
+*   [x] `MallService` ve `StoreService` için arayüzler oluşturuldu (DIP).
+*   [x] Controller'larda servis bağımlılıkları arayüzler üzerinden inject edildi.
+*   [x] `store-service`'e OpenFeign bağımlılığı eklendi ve `@EnableFeignClients` ile aktif edildi.
+*   [x] `MallServiceClient` Feign arayüzü oluşturuldu.
+*   [x] `StoreServiceImpl`'e `MallServiceClient` inject edildi ve `createStore` içinde `mallId` validasyonu eklendi.
+*   [x] `InvalidInputException` sınıfı oluşturuldu.
+*   [x] `StoreServiceImplTest` Feign client mock'u ve testleriyle güncellendi.
+*   [x] DIP ve Feign entegrasyonu sonrası test derleme hataları giderildi.
+*   [x] PostgreSQL başlangıç script'i düzeltildi (`init-databases.sql`).
+*   [x] `mall-service` ve `store-service` için Actuator tabanlı healthcheck iyileştirmesi yapıldı.
+*   [x] `mall-service` için Flyway `baselineOnMigrate` ayarı eklendi.
+*   [x] Tüm mikroservisler için JSON formatında konsol loglaması yapılandırıldı (`logback-spring.xml` ve `logstash-logback-encoder` ile).
+*   [x] Tüm mikroservisler için istek takibi (tracing) altyapısı eklendi (`Micrometer Tracing` ve `Brave` bridge ile B3 propagation).
+*   [x] Ana POM ve modül POM'larına ilgili loglama/izleme bağımlılıkları eklendi.
+*   [x] `user-service` modülü oluşturuldu (Web, JPA, Security, JWT, Flyway, Log/Trace bağımlılıkları).
+*   [x] `User` ve `Role` entity'leri oluşturuldu.
+*   [x] `UserRepository` oluşturuldu ve temel testleri yazıldı (@DataJpaTest, Testcontainers).
+*   [x] Temel Spring Security yapılandırması (`SecurityConfig`, `UserDetailsServiceImpl`, `PasswordEncoder`, `JwtUtils`) oluşturuldu.
+*   [x] `SecurityConfig` için temel entegrasyon testi yazıldı.
+*   [x] `user-service` için `Dockerfile`, `bootstrap.yml`, `application.yml`, `logback-spring.xml` ve V1 veritabanı migrasyonu oluşturuldu.
+*   [x] `docker-compose.yml` dosyasına `user-service` eklendi.

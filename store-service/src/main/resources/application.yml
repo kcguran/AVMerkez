@@ -1,2 +1,33 @@
 # This file can be empty or contain configurations that are NOT managed by the Config Server.
 # All primary configurations are expected to be fetched from the Spring Cloud Config Server. 
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics, mappings, configprops
+  # Micrometer Tracing Configuration
+  tracing:
+    sampling:
+      probability: 1.0 # %100 trace for dev/test
+    propagation:
+      type: B3 
+
+spring:
+  application:
+    name: store-service
+  # Yeni Spring Cloud Config yaklaşımı - configserver: ile başlayan import'u opsiyonel yap
+  config:
+    import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}
+  
+  # Config Client Configuration
+  cloud:
+    config:
+      fail-fast: false # Config server bulunamazsa fail olma
+      enabled: true
+      uri: http://localhost:8888
+      profile: default
+      label: main
+      request-connect-timeout: 5000
+      request-read-timeout: 10000 

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity; // Gateway WebFlux kullandığı için
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 
 @Configuration
 @EnableWebFluxSecurity // WebFlux tabanlı güvenlik konfigürasyonu
@@ -13,23 +14,23 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-            // CSRF korumasını devre dışı bırak
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            // HTTP Basic'i devre dışı bırak
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            // Form Login'i devre dışı bırak
-            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-            // Yetkilendirme kuralları
+            .csrf(ServerHttpSecurity.CsrfSpec::disable) // Disable CSRF for stateless API gateway
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // Disable Basic Auth
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable) // Disable Form Login
+            .logout(ServerHttpSecurity.LogoutSpec::disable) // Disable Logout
+            // Security context repository needs to be NoOp for stateless behavior with custom filter
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .authorizeExchange(exchanges -> exchanges
-                // Şimdilik tüm isteklere izin ver
-                .anyExchange().permitAll()
-                // TODO: Gerçek yetkilendirme kuralları eklenecek
-                // Örn: .pathMatchers("/api/v1/auth/**").permitAll()
-                // Örn: .pathMatchers("/mall-service/api-docs/**", "/mall-service/swagger-ui.html").permitAll() // Swagger UI erişimi
-                // Örn: .anyExchange().authenticated()
+                .pathMatchers("/eureka/**").permitAll() // Explicitly permit Eureka internal paths
+                // Add other paths that should bypass Spring Security entirely (if any)
+                // Our AuthenticationFilter handles fine-grained path control
+                .anyExchange().authenticated() // Require authentication handled by our filter
             );
 
-        // TODO: JWT doğrulama filtresi gibi Global Filter'lar eklenecek
+        // The AuthenticationFilter (GlobalFilter) will handle the actual JWT validation.
+        // We configure Spring Security here mainly to disable default protections and
+        // potentially set up authentication entry points if needed, but AuthenticationFilter
+        // intercepts before this chain for protected routes.
 
         return http.build();
     }

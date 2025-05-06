@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // JUnit 5 için Mockito entegrasyonu
+@ActiveProfiles("test") // Test profilini aktif et
 class MallServiceImplTest {
 
     // @Mock: Bu alan için bir Mockito mock nesnesi oluşturur
@@ -100,13 +102,16 @@ class MallServiceImplTest {
     @Test
     void getAllMalls_ShouldReturnListOfMallDtos() {
         // Arrange
+        String cityFilter = null; // veya test için bir değer
+        String districtFilter = null; // veya test için bir değer
         List<Mall> mallList = Collections.singletonList(mall);
         List<MallDto> mallDtoList = Collections.singletonList(mallDto);
+        // TODO: Depoya filtre parametreleri eklendiğinde mock'u güncelle
         when(mallRepository.findAll()).thenReturn(mallList);
         when(mallMapper.toMallDtoList(anyList())).thenReturn(mallDtoList);
 
         // Act
-        List<MallDto> result = mallService.getAllMalls();
+        List<MallDto> result = mallService.getAllMalls(cityFilter, districtFilter); // Parametreler eklendi
 
         // Assert
         assertNotNull(result);

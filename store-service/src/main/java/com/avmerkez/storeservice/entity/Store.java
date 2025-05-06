@@ -30,8 +30,8 @@ public class Store {
     @Column(length = 20)
     private String storeNumber; // Mağaza numarası (örn: "B1-102")
 
-    @Column(length = 100)
-    private String category; // Geçici olarak ekleyelim, idealde ID olmalı
+    @Column(name = "category_id")
+    private Long categoryId;
 
     private String contactInfo; // İletişim bilgisi (telefon vb.)
     private String description; // Açıklama

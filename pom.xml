@@ -30,6 +30,7 @@
         <module>api-gateway</module>
         <module>mall-service</module>
         <module>store-service</module>
+        <module>user-service</module>
         <!-- Diğer servisler eklendikçe buraya eklenecek -->
     </modules>
 
@@ -58,6 +59,39 @@
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-database-postgresql</artifactId>
                 <version>10.6.0</version>
+            </dependency>
+
+            <!-- Micrometer Tracing (Brave Bridge for Zipkin compatibility) -->
+            <!-- Kaldırıldı: Versiyon Spring Boot Dependencies tarafından yönetiliyor -->
+            <!--
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-tracing-bridge-brave</artifactId>
+            </dependency>
+            -->
+
+            <!-- Logback JSON Encoder -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>7.4</version> <!-- Güncel kararlı sürüm -->
+            </dependency>
+
+            <!-- JJWT (Java JWT) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>0.11.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>0.11.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>0.11.5</version>
             </dependency>
 
         </dependencies>

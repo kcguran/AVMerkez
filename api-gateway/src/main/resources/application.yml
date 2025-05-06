@@ -11,4 +11,22 @@ eureka:
     prefer-ip-address: true
 
 # Gateway and Actuator settings are now expected to come from the config server
-# (api-gateway.yml and application.yml in the Git repo) 
+# (api-gateway.yml and application.yml in the Git repo)
+
+# JWT Fallback Secret (Should ideally come entirely from Config Server)
+avmerkez:
+  app:
+    jwtSecret: fallbackSecretKeyLongerThan256BitsForHS256 # Fallback if not provided by config server
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway, prometheus, metrics # Gateway specific endpoints
+  # Micrometer Tracing Configuration
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: B3 

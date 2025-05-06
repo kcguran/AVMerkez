@@ -12,6 +12,8 @@ server:
 spring:
   application:
     name: mall-service # Service ID used by Eureka and Gateway
+  config:
+    import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}
 
   # Config Client Configuration
   cloud:
@@ -36,7 +38,7 @@ spring:
   jpa:
     hibernate:
       # Automatically create/update schema based on entities (use 'validate' or 'none' in prod)
-      ddl-auto: update
+      ddl-auto: validate
     # Show SQL statements in logs (useful for development)
     show-sql: true
     properties:
@@ -45,6 +47,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         # Optional: Format SQL logs for better readability
         format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 # Eureka Client Configuration
 eureka:
@@ -70,4 +75,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus, metrics, mappings, configprops # Expose standard endpoints 
+        include: health, info, prometheus, metrics, mappings, configprops # Expose standard endpoints
+  # Micrometer Tracing Configuration
+  tracing:
+    sampling:
+      # Percentage of requests to trace (1.0 = 100%, 0.1 = 10%)
+      # Use 1.0 for development/testing, lower value for production
+      probability: 1.0
+    # B3 propagation format is used by default with brave bridge
+    propagation:
+      type: B3 # Explicitly set (though default with brave) 

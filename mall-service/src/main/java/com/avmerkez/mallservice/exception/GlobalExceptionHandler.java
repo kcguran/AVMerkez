@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
 import java.util.List;
 
 @ControllerAdvice // Tüm @Controller ve @RestController için geçerli

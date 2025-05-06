@@ -16,6 +16,10 @@
     <name>API Gateway</name>
     <description>Spring Cloud API Gateway for AVMerkez</description>
 
+    <properties>
+        <lombok.version>1.18.30</lombok.version>
+    </properties>
+
     <dependencies>
         <!-- Spring Cloud Gateway -->
         <dependency>
@@ -66,6 +70,41 @@
             <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
 
+        <!-- Micrometer Tracing (İstek takibi için) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
+        <!-- Logback JSON Encoder -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <!-- JWT Dependencies (for validation) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional> <!-- Usually needed at compile time -->
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -73,6 +112,23 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <!-- Versiyon ana POM'dan gelebilir veya burada belirtilebilir -->
+                <configuration>
+                    <source>${java.version}</source> <!-- Ana POM'dan gelir -->
+                    <target>${java.version}</target> <!-- Ana POM'dan gelir -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- Eğer MapStruct gibi başka annotation processor'lar varsa buraya eklenir -->
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

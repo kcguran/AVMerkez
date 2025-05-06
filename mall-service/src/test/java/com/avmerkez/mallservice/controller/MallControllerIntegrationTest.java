@@ -22,6 +22,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 
@@ -38,7 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // @WebMvcTest yerine @SpringBootTest ve @AutoConfigureMockMvc kullan
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-                properties = {"spring.security.enabled=false"}) // Disable security for tests
+                properties = {
+                    "spring.security.enabled=false", // Disable security for tests
+                    "spring.cloud.config.fail-fast=false", // Explicitly disable fail-fast for config client in tests
+                    "spring.cloud.bootstrap.enabled=false", // Disable bootstrap context for tests
+                    "spring.config.import=" // Override/disable config server import for tests
+                })
+@ActiveProfiles("test") // Test profilini aktif et
 @AutoConfigureMockMvc // MockMvc'yi otomatik yapılandır
 @Testcontainers // Enable Testcontainers support
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD) // Bunu şimdilik tutalım
@@ -141,7 +148,7 @@ class MallControllerIntegrationTest {
     @Test
     void getAllMalls_ShouldReturnListOfMalls() throws Exception {
         // Given
-        given(mallService.getAllMalls()).willReturn(Collections.singletonList(mallDto));
+        given(mallService.getAllMalls(any(), any())).willReturn(Collections.singletonList(mallDto));
 
         // When & Then
         mockMvc.perform(get("/malls"))

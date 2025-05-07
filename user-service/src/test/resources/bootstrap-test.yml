@@ -1,0 +1,44 @@
+# Bootstrap configurations - loaded before application.yml when 'test' profile is active
+
+spring:
+  profiles:
+    active: test
+  application:
+    # Service name - MUST match the config file name and Eureka ID
+    name: user-service-test # Test için farklı bir isim, Eureka'da karışmaması için
+  cloud:
+    bootstrap:
+      enabled: false # Disable Spring Cloud Bootstrap context for tests
+    config:
+      # URI of the Config Server - Testlerde kullanılmayacak
+      uri: http://localhost:8888
+      enabled: false # Config Server'ı testler için devre dışı bırak
+      fail-fast: false # Config Server bulunamazsa hata verme
+      import-check:
+        enabled: false # İmport kontrolünü kapat
+    discovery:
+      enabled: false # Service discovery'i kapat
+    service-registry:
+      auto-registration:
+        enabled: false # Service registry'e otomatik kaydı kapat
+  config:
+    import: ''
+    
+# Logging
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: ERROR
+    org.springframework.boot.context.config: ERROR
+    com.avmerkez: DEBUG
+
+# Flyway configuration for tests
+flyway:
+  enabled: false # Testlerde Flyway'i devre dışı bırakabiliriz
+
+# Eureka Client Configuration
+eureka:
+  client:
+    enabled: false # Testlerde Eureka'yı devre dışı bırak
+    registerWithEureka: false
+    fetchRegistry: false 

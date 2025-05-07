@@ -1,0 +1,16 @@
+# Spring Cloud Bootstrap Configuration
+spring:
+  application:
+    name: user-service # MUST match the name registered with Eureka/Gateway
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://config-server:8888} # Default to Docker network name
+      fail-fast: true # Fail startup if config server is not available
+      retry:
+        initial-interval: 2000
+        max-interval: 5000
+        max-attempts: 10
+
+# Enable importing configuration from config server
+# This ensures that bootstrap context is loaded before the main application context
+spring.config.import: "configserver:" 

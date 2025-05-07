@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: store-service-test
+  config:
+    import: optional:classpath:/
+    activate:
+      on-profile: test
+  cloud:
+    config:
+      enabled: false
+      fail-fast: false
+    bootstrap:
+      enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
+    discovery:
+      enabled: false
+
+  # Database settings for tests
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql:15.3:///testdb
+    username: test
+    password: test
+    
+  # JPA settings
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+      
+  # Security setting
+  security:
+    user:
+      name: testuser
+      password: testpass
+      
+# Server port (development only)
+server:
+  port: 8082
+
+# Flyway configuration
+spring.flyway.enabled: false
+
+# Eureka Client Configuration
+eureka:
+  client:
+    enabled: false 

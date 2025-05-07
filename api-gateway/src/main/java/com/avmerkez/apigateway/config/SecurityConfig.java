@@ -21,7 +21,11 @@ public class SecurityConfig {
             // Security context repository needs to be NoOp for stateless behavior with custom filter
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/eureka/**").permitAll() // Explicitly permit Eureka internal paths
+                // Actuator, swagger ve Eureka için açık erişim
+                .pathMatchers("/actuator/**").permitAll()
+                .pathMatchers("/actuator/health/**").permitAll() 
+                .pathMatchers("/eureka/**").permitAll()
+                .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/webjars/**").permitAll()
                 // Add other paths that should bypass Spring Security entirely (if any)
                 // Our AuthenticationFilter handles fine-grained path control
                 .anyExchange().authenticated() // Require authentication handled by our filter

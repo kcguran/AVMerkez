@@ -1,6 +1,9 @@
 package com.avmerkez.userservice.service;
 
-// import com.avmerkez.userservice.dto.RegisterRequest; // Removed
+import com.avmerkez.userservice.dto.LoginRequest;
+import com.avmerkez.userservice.dto.RegisterRequest;
+import com.avmerkez.userservice.exception.UserAlreadyExistsException;
+import com.avmerkez.userservice.security.UserDetailsImpl;
 
 /**
  * Interface for authentication related operations.
@@ -8,5 +11,7 @@ package com.avmerkez.userservice.service;
  * Will be populated with future authentication methods.
  */
 public interface AuthService {
-    // void registerUser(RegisterRequest registerRequest); // Removed
+    void registerUser(RegisterRequest registerRequest) throws UserAlreadyExistsException;
+    UserDetailsImpl authenticateUser(LoginRequest loginRequest);
+    UserDetailsImpl refreshAccessToken(String refreshTokenCookieValue);
 } 

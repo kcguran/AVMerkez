@@ -31,6 +31,9 @@
         <module>mall-service</module>
         <module>store-service</module>
         <module>user-service</module>
+        <module>review-service</module>
+        <module>campaign-event-service</module>
+        <module>notification-service</module>
         <!-- Diğer servisler eklendikçe buraya eklenecek -->
     </modules>
 

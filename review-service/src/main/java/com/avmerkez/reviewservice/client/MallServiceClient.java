@@ -1,0 +1,25 @@
+package com.avmerkez.reviewservice.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+/**
+ * Feign client for communicating with mall-service.
+ */
+@FeignClient(name = "mall-service", path = "/api/v1/malls")
+public interface MallServiceClient {
+
+    /**
+     * Checks if a mall exists by its ID.
+     * Should have an endpoint like /api/v1/malls/{mallId}/exists in mall-service.
+     * Returns 2xx status if found, otherwise throws FeignException (e.g., 404).
+     *
+     * @param mallId The ID of the mall to check.
+     * @return ResponseEntity with status code (body is ignored).
+     */
+    @RequestMapping(method = RequestMethod.HEAD, value = "/{mallId}/exists")
+    ResponseEntity<Void> checkMallExists(@PathVariable("mallId") Long mallId);
+} 

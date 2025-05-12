@@ -1,40 +1,62 @@
 package com.avmerkez.storeservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Setter;
 
 @Entity
 @Table(name = "stores")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Store {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @NotBlank
+    @Size(max = 150)
+    @Column(nullable = false)
     private String name;
 
+    @NotNull
     @Column(nullable = false)
-    private Long mallId; // Hangi AVM'ye ait olduğu
+    private Long mallId; // This will link to AlisverisMerkezi in mall-service, handled via API calls
 
-    @Column(length = 50)
-    private String floor; // Kat bilgisi (örn: "Zemin Kat", "1. Kat")
+    @Size(max = 50)
+    private String floor;
 
-    @Column(length = 20)
-    private String storeNumber; // Mağaza numarası (örn: "B1-102")
+    @Size(max = 50)
+    private String storeNumber;
 
-    @Column(name = "category_id")
-    private Long categoryId;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    private String contactInfo; // İletişim bilgisi (telefon vb.)
-    private String description; // Açıklama
-    private String logoUrl; // Logo URL'si
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
 
+    @Column(columnDefinition = "TEXT")
+    private String contactInformation; // Could be JSON or semi-structured text
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Size(max = 255)
+    private String logoUrl;
+
+    public Store(String name, Long mallId, Category category, Brand brand) {
+        this.name = name;
+        this.mallId = mallId;
+        this.category = category;
+        this.brand = brand;
+    }
 } 

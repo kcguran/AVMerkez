@@ -1,47 +1,131 @@
 package com.avmerkez.userservice.service;
 
+import com.avmerkez.userservice.dto.LoginRequest;
+import com.avmerkez.userservice.dto.RegisterRequest;
+import com.avmerkez.userservice.entity.Role;
+import com.avmerkez.userservice.entity.User;
+import com.avmerkez.userservice.exception.UserAlreadyExistsException;
 import com.avmerkez.userservice.repository.UserRepository;
 import com.avmerkez.userservice.security.JwtUtils;
+import com.avmerkez.userservice.security.UserDetailsImpl;
+import com.avmerkez.userservice.event.UserRegisteredEvent;
+import com.avmerkez.userservice.entity.RefreshToken;
+import com.avmerkez.userservice.exception.TokenRefreshException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final JwtUtils jwtUtils;
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    /*
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final ApplicationEventPublisher eventPublisher;
+    private final RefreshTokenService refreshTokenService;
+
     @Override
     @Transactional
-    public void registerUser(RegisterRequest registerRequest) {
+    public void registerUser(RegisterRequest registerRequest) throws UserAlreadyExistsException {
+        // Kullanıcı adı veya e-posta var mı kontrol et
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new UserAlreadyExistsException("Error: Username is already taken!");
+            throw new UserAlreadyExistsException("Bu kullanıcı adı zaten kullanılıyor!");
         }
 
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new UserAlreadyExistsException("Error: Email is already in use!");
+            throw new UserAlreadyExistsException("Bu e-posta adresi zaten kullanılıyor!");
         }
 
-        // Create new user's account
-        User user = new User(registerRequest.getUsername(),
+        // Yeni kullanıcı nesnesi oluştur
+        User user = new User(
+                registerRequest.getUsername(),
                 registerRequest.getEmail(),
                 passwordEncoder.encode(registerRequest.getPassword()),
                 registerRequest.getFirstName(),
-                registerRequest.getLastName());
+                registerRequest.getLastName()
+        );
 
+        // Roller atanıyor
         Set<Role> roles = new HashSet<>();
-        // Default role is USER
-        roles.add(Role.USER);
-        user.setRoles(roles);
+        
+        // Varsayılan olarak USER rolü verilir
+        roles.add(Role.ROLE_USER);
+        
+        // Eğer rol belirtilmişse ve admin rolü varsa
+        if (registerRequest.getRoles() != null) {
+            registerRequest.getRoles().forEach(role -> {
+                if ("admin".equalsIgnoreCase(role)) {
+                    roles.add(Role.ROLE_ADMIN);
+                } else if ("mall_manager".equalsIgnoreCase(role)) {
+                    roles.add(Role.ROLE_MALL_MANAGER);
+                }
+            });
+        }
 
-        userRepository.save(user);
-        log.info("User registered successfully: {}", registerRequest.getUsername());
+        user.setRoles(roles);
+        User savedUser = userRepository.save(user);
+        
+        logger.info("User registered successfully: {}", savedUser.getUsername());
+
+        // Kullanıcı kayıt olayını yayınla
+        eventPublisher.publishEvent(new UserRegisteredEvent(this, savedUser));
+        logger.info("UserRegisteredEvent published for user: {}", savedUser.getUsername());
     }
-    */
+
+    @Override
+    public UserDetailsImpl authenticateUser(LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // String jwt = jwtUtils.generateJwtToken(authentication); // JWT burada oluşturulmayacak, AuthController'da oluşturulacak cookie için.
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        // List<String> roles = userDetails.getAuthorities().stream()
+        //         .map(item -> item.getAuthority())
+        //         .collect(Collectors.toList()); // Bu bilgi UserDetailsImpl içinde zaten var
+
+        logger.info("User authenticated successfully: {}", userDetails.getUsername());
+
+        // JwtResponse oluşturmak yerine doğrudan userDetails döndürülüyor.
+        // AuthController bu userDetails'ı kullanarak hem cookie'yi oluşturacak hem de yanıt DTO'sunu hazırlayacak.
+        return userDetails;
+    }
+
+    @Override
+    @Transactional
+    public UserDetailsImpl refreshAccessToken(String refreshTokenCookieValue) {
+        if (refreshTokenCookieValue == null) {
+            throw new TokenRefreshException("Refresh token cookie'de bulunamadı!");
+        }
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenCookieValue)
+                .map(refreshTokenService::verifyExpiration)
+                .orElseThrow(() -> new TokenRefreshException(refreshTokenCookieValue, "Refresh token veritabanında bulunamadı veya süresi dolmuş!"));
+
+        User user = refreshToken.getUser();
+        // Yeni bir JWT için UserDetailsImpl oluşturuluyor.
+        // Bu UserDetailsImpl, AuthController tarafından yeni access token cookie'si oluşturmak için kullanılacak.
+        // JWT'nin kendisi burada üretilmiyor, sadece UserDetailsImpl döndürülüyor.
+        return UserDetailsImpl.build(user);
+        // String newAccessToken = jwtUtils.generateTokenFromUsername(user.getUsername()); 
+        // return new AccessTokenResponse(newAccessToken, "Bearer"); // Eski dönüş tipi
+    }
 } 

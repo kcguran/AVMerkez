@@ -153,6 +153,21 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- For JTS Geometry Types (e.g., Point) -->
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.19.0</version> <!-- Or a newer compatible version -->
+        </dependency>
+
+        <!-- Hibernate Spatial for PostGIS support -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+            <!-- Version should align with your Spring Boot / Hibernate version -->
+            <!-- Check Spring Boot parent POM for managed version or specify explicitly -->
+        </dependency>
+
     </dependencies>
 
     <!-- MapStruct ve Lombok için Annotation Processor yapılandırması -->

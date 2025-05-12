@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "malls")
@@ -29,6 +30,27 @@ public class Mall {
 
     @Column(nullable = false, length = 50)
     private String district;
+
+    @Column(columnDefinition = "geometry(Point,4326)") // SRID 4326 for WGS 84
+    private Point location;
+
+    @Column(length = 100)
+    private String workingHours;
+
+    @Column
+    private String website;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(columnDefinition = "TEXT") // For a list of services, potentially comma-separated or JSON
+    private String services;
+
+    @Column(columnDefinition = "TEXT") // For a list of floor plan URLs, potentially comma-separated or JSON
+    private String floorPlans;
+
+    @Column
+    private Integer popularityScore;
 
     // PRD'deki diğer alanlar eklenecek (latitude, longitude, workingHours, website, phone etc.)
     // private Double latitude;

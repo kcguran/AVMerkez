@@ -2,8 +2,9 @@ package com.avmerkez.storeservice.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Feign client interface for communicating with mall-service.
@@ -18,7 +19,7 @@ public interface MallServiceClient {
      * @param mallId The ID of the mall to check.
      * @return ResponseEntity with status code (body is ignored).
      */
-    @GetMapping("/{mallId}")
+    @RequestMapping(method = RequestMethod.HEAD, value = "/{mallId}/exists")
     ResponseEntity<Void> checkMallExists(@PathVariable("mallId") Long mallId);
 
     // Alternatively, return MallDto if needed later:

@@ -31,3 +31,32 @@ spring:
       label: main
       request-connect-timeout: 5000
       request-read-timeout: 10000 
+
+# Resilience4j Configuration
+resilience4j.circuitbreaker:
+  instances:
+    mallServiceClient: # This name must match the name in @CircuitBreaker annotation
+      registerHealthIndicator: true
+      slidingWindowType: COUNT_BASED
+      slidingWindowSize: 10 # Number of requests in a closed state before calculating failure rate
+      minimumNumberOfCalls: 5 # Minimum number of calls before the CircuitBreaker can calculate the error rate
+      permittedNumberOfCallsInHalfOpenState: 3 # Number of calls permitted in half-open state
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s # Duration the CircuitBreaker stays open before transitioning to half-open
+      failureRateThreshold: 50 # Percentage of failures to open the circuit
+      eventConsumerBufferSize: 10
+      ignoreExceptions:
+        - com.avmerkez.storeservice.exception.InvalidInputException # Don't open circuit for these
+        - feign.FeignException$NotFound # Don't open circuit for 404s from Feign
+      # recordExceptions: # Explicitly record these exceptions, others are ignored by default if not specified
+      #  - java.io.IOException 
+
+# Application specific properties
+avmerkez:
+  app:
+    # JWT Configuration - Should be overridden by Config Server in prod/staging
+    # jwtSecret: storeServiceJwtSecretKeyWhichIsVerySecureAndLongEnough32Bytes # Fetched from Config Server
+    # jwtExpirationMs: 86400000 # Fetched from Config Server (now 1 hour)
+    # jwtCookieName: ${JWT_COOKIE_NAME:avm_jwt} # Fetched from Config Server
+    # jwtIssuer: avmerkez-auth-service # Fetched from Config Server as avmerkez-user-service
+    # jwtAudience: avmerkez-app # Fetched from Config Server

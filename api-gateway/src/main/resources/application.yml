@@ -16,7 +16,10 @@ eureka:
 # JWT Fallback Secret (Should ideally come entirely from Config Server)
 avmerkez:
   app:
-    jwtSecret: fallbackSecretKeyLongerThan256BitsForHS256 # Fallback if not provided by config server
+    # jwtSecret: fallbackSecretKeyLongerThan256BitsForHS256 # Fetched from Config Server
+    # jwtCookieName: avm_jwt # Fetched from Config Server
+    # jwtIssuer: avmerkez-auth-service # Fetched from Config Server as avmerkez-user-service
+    # jwtAudience: avmerkez-app # Fetched from Config Server
 
 # Actuator Configuration
 management:

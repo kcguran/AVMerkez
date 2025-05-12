@@ -18,6 +18,7 @@
 
     <properties>
         <lombok.version>1.18.30</lombok.version>
+        <springdoc.version>2.2.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -96,6 +97,13 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI for Gateway (Swagger UI) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- Lombok -->

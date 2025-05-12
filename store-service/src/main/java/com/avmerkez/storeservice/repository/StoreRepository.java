@@ -13,5 +13,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findByMallId(Long mallId);
 
     // İleride kategoriye, markaya göre filtreleme eklenebilir
-    // List<Store> findByMallIdAndCategoryId(Long mallId, Long categoryId);
+    List<Store> findByCategoryId(Long categoryId);
+    List<Store> findByBrandId(Long brandId);
+    List<Store> findByMallIdAndCategoryId(Long mallId, Long categoryId);
+    List<Store> findByMallIdAndBrandId(Long mallId, Long brandId);
 } 

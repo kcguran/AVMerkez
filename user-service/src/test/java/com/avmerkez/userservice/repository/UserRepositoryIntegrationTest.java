@@ -7,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -59,7 +58,7 @@ class UserRepositoryIntegrationTest {
         userRepository.deleteAll();
 
         testUser = new User("testuser", "test@example.com", "encodedPassword", "Test", "User");
-        testUser.setRoles(Set.of(Role.USER));
+        testUser.setRoles(Set.of(Role.ROLE_USER));
         userRepository.save(testUser);
     }
 
@@ -97,28 +96,28 @@ class UserRepositoryIntegrationTest {
     @Test
     @DisplayName("existsByUsername should return true when username exists")
     void existsByUsername_ExistingUser_ReturnsTrue() {
-        Boolean exists = userRepository.existsByUsername("testuser");
+        boolean exists = userRepository.existsByUsername("testuser");
         assertThat(exists).isTrue();
     }
 
     @Test
     @DisplayName("existsByUsername should return false when username does not exist")
     void existsByUsername_NonExistingUser_ReturnsFalse() {
-        Boolean exists = userRepository.existsByUsername("nonexistent");
+        boolean exists = userRepository.existsByUsername("nonexistent");
         assertThat(exists).isFalse();
     }
 
     @Test
     @DisplayName("existsByEmail should return true when email exists")
     void existsByEmail_ExistingEmail_ReturnsTrue() {
-        Boolean exists = userRepository.existsByEmail("test@example.com");
+        boolean exists = userRepository.existsByEmail("test@example.com");
         assertThat(exists).isTrue();
     }
 
     @Test
     @DisplayName("existsByEmail should return false when email does not exist")
     void existsByEmail_NonExistingEmail_ReturnsFalse() {
-        Boolean exists = userRepository.existsByEmail("nonexistent@example.com");
+        boolean exists = userRepository.existsByEmail("nonexistent@example.com");
         assertThat(exists).isFalse();
     }
 
@@ -126,7 +125,7 @@ class UserRepositoryIntegrationTest {
     @DisplayName("Saving user should assign an ID and createdAt timestamp")
     void saveUser_AssignsIdAndTimestamp() {
         User newUser = new User("newuser", "new@example.com", "password", "New", "User");
-        newUser.setRoles(Set.of(Role.USER));
+        newUser.setRoles(Set.of(Role.ROLE_USER));
         User savedUser = userRepository.save(newUser);
 
         assertThat(savedUser.getId()).isNotNull();

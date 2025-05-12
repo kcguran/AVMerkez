@@ -4,40 +4,82 @@
     <!-- Spring Boot'un temel logback yapılandırmasını dahil et -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <!-- JSON Console Appender -->
-    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <!-- Kod içerisinde MDC'ye manuel ekleme yapmadan traceId ve spanId ekler -->
-            <!-- Spring Boot 3 ve sonrası için bu alanlar otomatik olarak loglara dahil edilir -->
-            <!-- includeMdcKeyName>traceId</includeMdcKeyName -->
-            <!-- includeMdcKeyName>spanId</includeMdcKeyName -->
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_FILE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %X{traceId:-} %X{spanId:-} - %msg%n"/>
 
-            <!-- JSON çıktısındaki alan isimlerini özelleştirebilirsiniz -->
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <version>[ignore]</version> <!-- Logstash format version, ignore if not needed -->
-                <level>level</level>
-                <thread>thread</thread>
-                <logger>logger</logger>
-                <message>message</message>
-                <stackTrace>stack_trace</stackTrace>
-                <!-- Otomatik eklenen tracing alanları genellikle traceId ve spanId olur -->
-            </fieldNames>
-
-             <!-- Uygulama adını her log kaydına ekle -->
-            <!-- springAppName bootstrap contextden veya spring.application.nameden alınır -->
-            <customFields>{"app_name":"${springAppName:-store-service}"}</customFields>
-
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <!-- Belirli paketler için log seviyesi ayarlaması -->
-    <!-- logger name="com.avmerkez" level="DEBUG"/ -->
-    <!-- logger name="org.springframework.web" level="INFO"/ -->
+    <!-- Comment out or configure Logstash appender as needed -->
+    <!--
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>localhost:5044</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeCallerData>true</includeCallerData>
+            <customFields>{"application_name":"${springAppName:-unknown-app}"}</customFields>
+        </encoder>
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+    </appender>
+    -->
 
-    <!-- Kök logger'ı ayarla -->
-    <root level="INFO"> <!-- Varsayılan seviye INFO -->
-        <appender-ref ref="CONSOLE_JSON" /> <!-- Sadece JSON console appenderı kullan -->
+    <!-- Example for JSON console logging (alternative or for dev) -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <version/>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <message/>
+                <arguments/>
+                <stackTrace>
+                    <fieldName>stack_trace</fieldName>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                        <maxLength>2048</maxLength>
+                        <shortenedClassNameLength>20</shortenedClassNameLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+                <mdc/>
+                <tags/>
+                <pattern>
+                    <pattern>
+                        {
+                          "application_name": "${springAppName:-unknown-app}",
+                          "trace_id": "%X{traceId:-}",
+                          "span_id": "%X{spanId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <!-- <appender-ref ref="LOGSTASH"/> -->
+        <!-- <appender-ref ref="CONSOLE_JSON"/> Use this for JSON logging to console -->
     </root>
+
+    <!-- Suppress excessive logging from Kafka if it's too noisy -->
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.springframework.kafka" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="com.avmerkez" level="DEBUG"/>
 
 </configuration> 

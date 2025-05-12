@@ -48,9 +48,9 @@ class MallServiceImplTest {
     void setUp() {
         // Her testten önce kullanılacak örnek verileri hazırla
         mall = Mall.builder().id(1L).name("Test Mall").city("Test City").district("Test District").address("Test Address").build();
-        mallDto = new MallDto(1L, "Test Mall", "Test City", "Test District");
-        createMallRequest = new CreateMallRequest("Test Mall", "Test Address", "Test City", "Test District");
-        updateMallRequest = new UpdateMallRequest("Updated Mall", "Updated Address", "Updated City", "Updated District");
+        mallDto = new MallDto(1L, "Test Mall", "Test City", "Test District", "Test Address", 39.92, 32.85, "10-22", "web.com", "123");
+        createMallRequest = new CreateMallRequest("Test Mall", "Test Address", "Test City", "Test District", 39.92, 32.85, "10-22", "web.com", "123");
+        updateMallRequest = new UpdateMallRequest("Updated Mall", "Updated Address", "Updated City", "Updated District", 39.93, 32.86, "09-23", "newweb.com", "456");
     }
 
     @Test
@@ -176,5 +176,52 @@ class MallServiceImplTest {
             mallService.deleteMall(1L);
         });
         verify(mallRepository, never()).deleteById(anyLong()); // deleteById'ın hiç çağrılmadığını doğrula
+    }
+
+    @Test
+    void findMallsNearLocation_ShouldReturnListOfMallDtos_WhenMallsFound() {
+        // Arrange
+        double lat = 39.920770;
+        double lon = 32.854110;
+        double distKm = 5.0;
+        double distMeters = distKm * 1000.0;
+
+        List<Mall> foundMalls = Collections.singletonList(mall); // Örnek bir AVM listesi
+        List<MallDto> expectedDtos = Collections.singletonList(mallDto); // Eşleşen DTO listesi
+
+        when(mallRepository.findMallsWithinDistance(lat, lon, distMeters)).thenReturn(foundMalls);
+        when(mallMapper.toMallDtoList(foundMalls)).thenReturn(expectedDtos);
+
+        // Act
+        List<MallDto> result = mallService.findMallsNearLocation(lat, lon, distKm);
+
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(expectedDtos.get(0).getId(), result.get(0).getId());
+        verify(mallRepository).findMallsWithinDistance(lat, lon, distMeters);
+        verify(mallMapper).toMallDtoList(foundMalls);
+    }
+
+    @Test
+    void findMallsNearLocation_ShouldReturnEmptyList_WhenNoMallsFound() {
+        // Arrange
+        double lat = 40.0;
+        double lon = 33.0;
+        double distKm = 1.0;
+        double distMeters = distKm * 1000.0;
+
+        when(mallRepository.findMallsWithinDistance(lat, lon, distMeters)).thenReturn(Collections.emptyList());
+        when(mallMapper.toMallDtoList(Collections.emptyList())).thenReturn(Collections.emptyList());
+
+        // Act
+        List<MallDto> result = mallService.findMallsNearLocation(lat, lon, distKm);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(mallRepository).findMallsWithinDistance(lat, lon, distMeters);
+        verify(mallMapper).toMallDtoList(Collections.emptyList());
     }
 } 

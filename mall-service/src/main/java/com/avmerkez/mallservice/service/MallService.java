@@ -21,4 +21,6 @@ public interface MallService {
     MallDto updateMall(Long id, UpdateMallRequest updateMallRequest);
 
     void deleteMall(Long id);
+
+    List<MallDto> findMallsNearLocation(double latitude, double longitude, double distanceInKilometers);
 } 

@@ -10,7 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication
 @EnableDiscoveryClient // Register with Eureka
-@EnableFeignClients // Feign client'ları aktif et
+@EnableFeignClients // Enable Feign Clients for service communication
 public class StoreServiceApplication {
 
     public static void main(String[] args) {

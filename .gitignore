@@ -8,46 +8,87 @@
 *.tar.gz
 *.rar
 
-# Compiled output
-/target/
-!/target/classes/
-!/target/test-classes/
+# Package Files
+!gradle/wrapper/gradle-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 
-*/target/classes/
-*/target/test-classes/
-
-# Maven
-*.pom.releaseBackup
-*.pom.versionsBackup
-*.pom.next
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
 
-### IDE ###
+# STS/Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
 # IntelliJ IDEA
-.idea/
+.idea
+*.iws
 *.iml
 *.ipr
-*.iws
-out/
+.idea/
+.idea/*
+.run/
 
 # VS Code
 .vscode/
+.history/
 
-# Eclipse
-.project
-.classpath
-.settings/
-bin/
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Spring Boot ###
+**/src/main/**/target/
+**/src/test/**/target/
+.spring-dependencies
+
+# Spring Boot application-local.yml (local config not for version control)
+**/src/main/resources/application-local.yml
+**/src/main/resources/application-local.properties
+
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+### Docker ###
+.docker/
+docker-compose.override.yml
+
+### Testcontainers ###
+.testcontainers-tmp/
+.testcontainers.properties
 
 ### OS Generated Files ###
 # Mac
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
 
 # Windows
 Thumbs.db
@@ -55,16 +96,31 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
-### Docker ###
-docker-compose.override.yml
+### Deployment ###
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-### Testcontainers ###
-.testcontainers.properties
+### Logs ###
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-### Other ###
-/logs/
-/dist/
-/node_modules/
+
+### Microservices Specific ###
+# Config server git clones
+config-server-repo/
+
+### Project Specific ###
+# Swagger generated files
+**/.swagger-codegen/
+**/generated-sources/
+
+### Temp Files ###
 *.swp
 *.swo
 *~
@@ -72,8 +128,11 @@ docker-compose.override.yml
 *.bak
 *.orig
 
-# Specific to this project (if any)
-# e.g., local config files not in repo
+### H2 ###
+*.db
+*.mv.db
+*.trace.db
 
+# Project specifics
 prd.md
 .cursor/

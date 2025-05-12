@@ -1,9 +1,11 @@
 package com.avmerkez.apigateway.filter;
 
-import com.avmerkez.apigateway.security.JwtUtils;
+import com.avmerkez.apigateway.security.JwtUtilGateway;
 import io.jsonwebtoken.Claims;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -12,104 +14,92 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.function.Predicate;
 
+@RefreshScope // To refresh JWT secret if changed in Config Server
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
-    private final JwtUtils jwtUtils;
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
-    // List of paths that do not require authentication
-    private final List<String> publicPaths = List.of(
-            "/api/v1/auth/**", // Example: Auth endpoints (if any were public)
-            "/eureka/**",      // Allow Eureka client communication
-            "/actuator/**",    // Allow actuator endpoints (configure exposure carefully)
-            "/actuator/health/**", // Özellikle health endpointleri için
-            "/v3/api-docs/**", // OpenAPI docs
-            "/swagger-ui/**",  // Swagger UI
-            "/webjars/**"
+    @Autowired
+    private JwtUtilGateway jwtUtil;
+
+    // Public endpoints that do not require authentication
+    public static final List<String> openApiEndpoints = List.of(
+            "/api/v1/auth/register",
+            "/api/v1/auth/login",
+            "/api/v1/auth/token/refresh",
+            "/api/v1/reviews/public", // Review Service public endpoints
+            "/eureka", // Eureka dashboard/API might be public or secured differently
+            "/swagger-ui", // Generic swagger
+            "/v3/api-docs" // Generic api-docs
+            // Add other specific public paths for services if needed, e.g., /user-service/v3/api-docs
     );
+
+    // Predicate to check if the request is for an open API endpoint
+    private Predicate<ServerHttpRequest> isSecured = request -> openApiEndpoints.stream()
+            .noneMatch(uri -> request.getURI().getPath().contains(uri));
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        String path = request.getURI().getPath();
+        logger.info("Request received: {} {}", request.getMethod(), request.getURI().getPath());
 
-        // Check if the path is public
-        boolean isPublic = publicPaths.stream().anyMatch(p -> pathMatcher.match(p, path));
-        if (isPublic) {
-            log.debug("Path {} is public, skipping authentication.", path);
-            return chain.filter(exchange);
+        if (isSecured.test(request)) {
+            String token = jwtUtil.getJwtFromCookies(request);
+
+            if (token == null) {
+                logger.warn("JWT cookie (avm_jwt) is missing for secured endpoint: {}", request.getURI().getPath());
+                return this.onError(exchange, "JWT cookie is missing in request", HttpStatus.UNAUTHORIZED);
+            }
+            
+            logger.debug("Token extracted from cookie: {}", token);
+
+            try {
+                if (!jwtUtil.validateToken(token)) {
+                    logger.warn("JWT token validation failed for path: {}", request.getURI().getPath());
+                    return this.onError(exchange, "JWT Token is not valid", HttpStatus.UNAUTHORIZED);
+                }
+
+                Claims claims = jwtUtil.getAllClaimsFromToken(token);
+                String username = claims.getSubject();
+                List<String> roles = jwtUtil.getRolesFromToken(token);
+                
+                logger.debug("Token validated for user: {}, roles: {}", username, roles);
+
+                // Add custom headers to the downstream request
+                exchange.getRequest().mutate()
+                        .header("X-Auth-Username", username)
+                        .header("X-Auth-Roles", String.join(",", roles != null ? roles : List.of()))
+                        .build();
+                logger.info("Forwarding request for user {} to {}", username, request.getURI().getPath());
+
+            } catch (Exception e) {
+                logger.error("Error during JWT token validation or processing: {}", e.getMessage(), e);
+                return this.onError(exchange, "Error processing JWT token", HttpStatus.UNAUTHORIZED);
+            }
         }
-
-        log.debug("Authenticating request for path: {}", path);
-
-        // Check for Authorization header
-        if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-            log.warn("Authorization header is missing for path: {}", path);
-            return onError(exchange, "Authorization header is missing", HttpStatus.UNAUTHORIZED);
-        }
-
-        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        String token = null;
-
-        // Extract token
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        } else {
-             log.warn("Authorization header is not Bearer type for path: {}", path);
-             return onError(exchange, "Invalid Authorization header format", HttpStatus.UNAUTHORIZED);
-        }
-
-        // Validate token
-        if (!jwtUtils.validateJwtToken(token)) {
-            log.warn("Invalid JWT token received for path: {}", path);
-            return onError(exchange, "Invalid or expired JWT token", HttpStatus.UNAUTHORIZED);
-        }
-
-        // Token is valid, proceed
-        try {
-            Claims claims = jwtUtils.getAllClaimsFromToken(token);
-            String username = claims.getSubject();
-            log.debug("JWT validated for user: {}, path: {}", username, path);
-
-            // Optional: Add user info to request headers for downstream services
-            // ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-            //         .header("X-User-Name", username)
-            //         // Add roles or other claims as needed
-            //         // .header("X-User-Roles", claims.get("roles").toString())
-            //         .build();
-            // return chain.filter(exchange.mutate().request(mutatedRequest).build());
-
-            return chain.filter(exchange);
-
-        } catch (Exception e) {
-            log.error("Error processing JWT or modifying request for path {}: {}", path, e.getMessage());
-            return onError(exchange, "Error processing authentication token", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return chain.filter(exchange);
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
-        // Optionally set response body with error message
-        // response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
-        // byte[] bytes = String.format("{\"error\": \"%s\"}", err).getBytes(StandardCharsets.UTF_8);
-        // DataBuffer buffer = response.bufferFactory().wrap(bytes);
+        // Optionally, write a JSON error response body
+        // byte[] bytes = ("{\"error\": \"" + err + "\"}").getBytes(StandardCharsets.UTF_8);
+        // DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
         // return response.writeWith(Mono.just(buffer));
+        logger.warn("Responding with error: Status={}, Message=\"{}\", Path={}", httpStatus, err, exchange.getRequest().getURI().getPath());
         return response.setComplete();
     }
 
     @Override
     public int getOrder() {
-        // Ensure this filter runs before most other filters, especially routing filters
-        return -100; // High precedence
+        return -1; // Execute this filter before others, e.g., LoadBalancerClientFilter (0)
     }
 } 

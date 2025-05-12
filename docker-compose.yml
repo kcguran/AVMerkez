@@ -12,6 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d # init scriptlerini mount et
+      - ./postgres-init/create-review-service-db.sql:/docker-entrypoint-initdb.d/create-review-service-db.sql
     ports:
       - "5432:5432" # Lokal erişim için (opsiyonel)
     networks:
@@ -178,6 +179,27 @@ services:
       timeout: 10s
       retries: 20
       start_period: 100s
+
+  review-service:
+    container_name: review-service
+    build:
+      context: ./review-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/review_service_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+    depends_on:
+      - postgres
+      - discovery-server
+      - config-server
+    networks:
+      - avmerkez-network
 
 # Volumes Definition
 volumes:

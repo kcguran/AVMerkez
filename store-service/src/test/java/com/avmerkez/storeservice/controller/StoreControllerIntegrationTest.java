@@ -1,8 +1,11 @@
 package com.avmerkez.storeservice.controller;
 
 import com.avmerkez.storeservice.dto.CreateStoreRequest;
+import com.avmerkez.storeservice.dto.StoreDetailDto;
 import com.avmerkez.storeservice.dto.StoreDto;
 import com.avmerkez.storeservice.dto.UpdateStoreRequest;
+import com.avmerkez.storeservice.entity.Brand;
+import com.avmerkez.storeservice.entity.Category;
 import com.avmerkez.storeservice.exception.GlobalExceptionHandler;
 import com.avmerkez.storeservice.exception.ResourceNotFoundException;
 import com.avmerkez.storeservice.service.StoreService;
@@ -43,36 +46,107 @@ class StoreControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     private StoreDto storeDto;
+    private StoreDetailDto storeDetailDto;
     private CreateStoreRequest createStoreRequest;
     private UpdateStoreRequest updateStoreRequest;
     private final Long MALL_ID = 1L;
     private final Long STORE_ID = 1L;
+    private final Long CATEGORY_ID = 1L;
+    private final String CATEGORY_NAME = "Electronics";
+    private final Long BRAND_ID = 1L;
+    private final String BRAND_NAME = "Test Brand";
     private final Long NON_EXISTING_ID = 99L;
 
     @BeforeEach
     void setUp() {
-        storeDto = new StoreDto(STORE_ID, MALL_ID, "Test Store", 1L, "1st Floor", "A-101");
-        createStoreRequest = new CreateStoreRequest(MALL_ID, "Test Store", 1L, "1st Floor", "A-101");
-        updateStoreRequest = new UpdateStoreRequest("Updated Store", 2L, "Ground Floor", "G-05");
+        // Initialize the DTO objects with all required fields
+        storeDto = new StoreDto(
+                STORE_ID,
+                "Test Store",
+                MALL_ID,
+                CATEGORY_ID,
+                CATEGORY_NAME,
+                BRAND_ID,
+                BRAND_NAME,
+                "1st Floor",
+                "A-101",
+                "Contact info",
+                "Description",
+                "logo.png"
+        );
+        
+        // Set up StoreDetailDto with nested Category and Brand objects
+        Category category = new Category(CATEGORY_NAME);
+        category.setId(CATEGORY_ID);
+        
+        Brand brand = new Brand(BRAND_NAME);
+        brand.setId(BRAND_ID);
+        
+        storeDetailDto = new StoreDetailDto(
+                STORE_ID,
+                "Test Store",
+                MALL_ID,
+                "1st Floor",
+                "A-101",
+                null, // Will be replaced with CategoryDto
+                null, // Will be replaced with BrandDto
+                "Contact info",
+                "Description",
+                "logo.png"
+        );
+        
+        createStoreRequest = new CreateStoreRequest(
+                MALL_ID,
+                "Test Store", 
+                CATEGORY_ID,
+                "1st Floor", 
+                "A-101",
+                BRAND_ID,
+                "Contact info",
+                "Description",
+                "logo.png"
+        );
+        
+        updateStoreRequest = new UpdateStoreRequest(
+                "Updated Store", 
+                MALL_ID,
+                CATEGORY_ID,
+                BRAND_ID,
+                "Ground Floor", 
+                "G-05",
+                "Updated contact",
+                "Updated description",
+                "updated-logo.png"
+        );
     }
 
     @Test
     @DisplayName("Create store - Valid Request")
     void createStore_ShouldReturnCreated() throws Exception {
-        given(storeService.createStore(any(CreateStoreRequest.class))).willReturn(storeDto);
+        given(storeService.createStore(any(CreateStoreRequest.class))).willReturn(storeDetailDto);
 
         mockMvc.perform(post("/stores")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createStoreRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", is(storeDto.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(storeDto.getName())));
+                .andExpect(jsonPath("$.id", is(storeDetailDto.getId().intValue())))
+                .andExpect(jsonPath("$.name", is(storeDetailDto.getName())));
     }
 
     @Test
     @DisplayName("Create store - Invalid Request (Blank Name)")
     void createStore_ShouldReturnBadRequest_WhenNameIsBlank() throws Exception {
-        CreateStoreRequest invalidRequest = new CreateStoreRequest(MALL_ID, "", 1L, "1st Floor", "A-101");
+        CreateStoreRequest invalidRequest = new CreateStoreRequest(
+                MALL_ID, 
+                "", // Invalid blank name
+                CATEGORY_ID,
+                "1st Floor", 
+                "A-101",
+                BRAND_ID,
+                "Contact info",
+                "Description",
+                "logo.png"
+        );
 
         mockMvc.perform(post("/stores")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,7 +158,7 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Get store by ID - Found")
     void getStoreById_ShouldReturnStore() throws Exception {
-        given(storeService.getStoreById(STORE_ID)).willReturn(storeDto);
+        given(storeService.getStoreById(STORE_ID)).willReturn(storeDetailDto);
 
         mockMvc.perform(get("/stores/{id}", STORE_ID))
                 .andExpect(status().isOk())
@@ -104,7 +178,7 @@ class StoreControllerIntegrationTest {
     @DisplayName("Get stores by Mall ID - Found")
     void getStoresByMallId_ShouldReturnStoreList() throws Exception {
         List<StoreDto> storeList = Collections.singletonList(storeDto);
-        given(storeService.getAllStores(MALL_ID)).willReturn(storeList);
+        given(storeService.getStoresByMallId(MALL_ID)).willReturn(storeList);
 
         mockMvc.perform(get("/stores").param("mallId", MALL_ID.toString()))
                 .andExpect(status().isOk())
@@ -115,7 +189,7 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Get stores by Mall ID - Not Found")
     void getStoresByMallId_ShouldReturnEmptyList() throws Exception {
-        given(storeService.getAllStores(NON_EXISTING_ID)).willReturn(Collections.emptyList());
+        given(storeService.getStoresByMallId(NON_EXISTING_ID)).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/stores").param("mallId", NON_EXISTING_ID.toString()))
                 .andExpect(status().isOk())
@@ -125,14 +199,13 @@ class StoreControllerIntegrationTest {
     @Test
     @DisplayName("Update store - Valid Request")
     void updateStore_ShouldReturnOk() throws Exception {
-        StoreDto updatedDto = new StoreDto(STORE_ID, MALL_ID, updateStoreRequest.getName(), updateStoreRequest.getCategoryId(), updateStoreRequest.getFloor(), updateStoreRequest.getStoreNumber());
-        given(storeService.updateStore(eq(STORE_ID), any(UpdateStoreRequest.class))).willReturn(updatedDto);
+        given(storeService.updateStore(eq(STORE_ID), any(UpdateStoreRequest.class))).willReturn(storeDetailDto);
 
         mockMvc.perform(put("/stores/{id}", STORE_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateStoreRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is(updateStoreRequest.getName())));
+                .andExpect(jsonPath("$.name", is(storeDetailDto.getName())));
     }
 
     @Test

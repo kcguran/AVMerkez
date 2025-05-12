@@ -3,8 +3,16 @@
 
 avmerkez:
   app:
-    jwtSecret: ${JWT_SECRET:c2VjcmV0IGtleSBtdXN0IGJlIGxvbmcgdGhhbiAyNTYgYml0cw==} # Use environment variable or Vault
-    jwtExpirationMs: ${JWT_EXPIRATION_MS:3600000}
+    jwtSecret: ${JWT_SECRET:c2VjcmV0IGtleSBtdXN0IGJlIGxvbmcgdGhhbiAyNTYgYml0cw==}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS:3600000} # Access token: 1 hour
+    jwtCookieName: ${JWT_COOKIE_NAME:avm_jwt}
+    jwtRefreshExpirationMs: ${JWT_REFRESH_EXPIRATION_MS:604800000} # Refresh token: 7 days (7 * 24 * 60 * 60 * 1000)
+    jwtRefreshCookieName: ${JWT_REFRESH_COOKIE_NAME:avm_refresh_token}
+    jwtIssuer: ${JWT_ISSUER:avmerkez-user-service}
+    jwtAudience: ${JWT_AUDIENCE:avmerkez-api}
+    kafka:
+      topics:
+        user-registration: user-registration-events
 
 # Actuator Configuration
 management:
@@ -38,4 +46,22 @@ spring:
       profile: default
       label: main
       request-connect-timeout: 5000
-      request-read-timeout: 10000 
+      request-read-timeout: 10000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Kafka Configuration
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # Use JsonSerializer for DTOs or StringSerializer for simple strings
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer 
+      properties:
+        # Disable adding type info headers for cleaner messages if consumers don't rely on it
+        spring.json.add.type.headers: false 

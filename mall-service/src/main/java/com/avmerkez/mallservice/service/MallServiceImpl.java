@@ -7,8 +7,10 @@ import com.avmerkez.mallservice.entity.Mall;
 import com.avmerkez.mallservice.exception.ResourceNotFoundException;
 import com.avmerkez.mallservice.mapper.MallMapper;
 import com.avmerkez.mallservice.repository.MallRepository;
+import com.avmerkez.mallservice.repository.MallSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +22,11 @@ import java.util.List;
 @Transactional // Servis metotlarını varsayılan olarak transactional yap
 public class MallServiceImpl implements MallService {
 
+    private static final double KILOMETERS_TO_METERS = 1000.0;
+
     private final MallRepository mallRepository;
     private final MallMapper mallMapper;
+    private final MallSpecification mallSpecification;
 
     @Override
     @Transactional // Veri yazma işlemi
@@ -42,11 +47,11 @@ public class MallServiceImpl implements MallService {
     }
 
     @Override
-    @Transactional(readOnly = true) // Sadece okuma işlemi
+    @Transactional(readOnly = true)
     public List<MallDto> getAllMalls(String city, String district) {
         log.info("Fetching all malls. City filter: [{}], District filter: [{}]", city, district);
-        // TODO: Implement filtering logic based on city and district
-        List<Mall> malls = mallRepository.findAll();
+        Specification<Mall> spec = mallSpecification.findByCriteria(city, district);
+        List<Mall> malls = mallRepository.findAll(spec);
         return mallMapper.toMallDtoList(malls);
     }
 
@@ -72,5 +77,15 @@ public class MallServiceImpl implements MallService {
             throw new ResourceNotFoundException("Mall", "id", id);
         }
         mallRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MallDto> findMallsNearLocation(double latitude, double longitude, double distanceInKilometers) {
+        log.info("Finding malls near location (lat: {}, lon: {}) within {} km", latitude, longitude, distanceInKilometers);
+        double distanceInMeters = distanceInKilometers * KILOMETERS_TO_METERS;
+        List<Mall> malls = mallRepository.findMallsWithinDistance(latitude, longitude, distanceInMeters);
+        log.info("Found {} malls near location (lat: {}, lon: {}) within {} km", malls.size(), latitude, longitude, distanceInKilometers);
+        return mallMapper.toMallDtoList(malls);
     }
 } 

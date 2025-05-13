@@ -1,62 +1,8 @@
-# This file can be empty or contain configurations that are NOT managed by the Config Server.
-# All primary configurations are expected to be fetched from the Spring Cloud Config Server. 
-
-# Actuator Configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, metrics, mappings, configprops
-  # Micrometer Tracing Configuration
-  tracing:
-    sampling:
-      probability: 1.0 # %100 trace for dev/test
-    propagation:
-      type: B3 
+# Bu dosya artık çoğunlukla boş olabilir.
 
 spring:
-  application:
-    name: store-service
-  # Yeni Spring Cloud Config yaklaşımı - configserver: ile başlayan import'u opsiyonel yap
-  config:
-    import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}
-  
-  # Config Client Configuration
-  cloud:
-    config:
-      fail-fast: false # Config server bulunamazsa fail olma
-      enabled: true
-      uri: http://localhost:8888
-      profile: default
-      label: main
-      request-connect-timeout: 5000
-      request-read-timeout: 10000 
-
-# Resilience4j Configuration
-resilience4j.circuitbreaker:
-  instances:
-    mallServiceClient: # This name must match the name in @CircuitBreaker annotation
-      registerHealthIndicator: true
-      slidingWindowType: COUNT_BASED
-      slidingWindowSize: 10 # Number of requests in a closed state before calculating failure rate
-      minimumNumberOfCalls: 5 # Minimum number of calls before the CircuitBreaker can calculate the error rate
-      permittedNumberOfCallsInHalfOpenState: 3 # Number of calls permitted in half-open state
-      automaticTransitionFromOpenToHalfOpenEnabled: true
-      waitDurationInOpenState: 5s # Duration the CircuitBreaker stays open before transitioning to half-open
-      failureRateThreshold: 50 # Percentage of failures to open the circuit
-      eventConsumerBufferSize: 10
-      ignoreExceptions:
-        - com.avmerkez.storeservice.exception.InvalidInputException # Don't open circuit for these
-        - feign.FeignException$NotFound # Don't open circuit for 404s from Feign
-      # recordExceptions: # Explicitly record these exceptions, others are ignored by default if not specified
-      #  - java.io.IOException 
-
-# Application specific properties
-avmerkez:
-  app:
-    # JWT Configuration - Should be overridden by Config Server in prod/staging
-    # jwtSecret: storeServiceJwtSecretKeyWhichIsVerySecureAndLongEnough32Bytes # Fetched from Config Server
-    # jwtExpirationMs: 86400000 # Fetched from Config Server (now 1 hour)
-    # jwtCookieName: ${JWT_COOKIE_NAME:avm_jwt} # Fetched from Config Server
-    # jwtIssuer: avmerkez-auth-service # Fetched from Config Server as avmerkez-user-service
-    # jwtAudience: avmerkez-app # Fetched from Config Server
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  # Config Server import direktifi bootstrap.yml'de olduğu için burada tekrar gerekmez.
+  # config:
+  #  import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}

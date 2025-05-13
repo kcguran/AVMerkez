@@ -9,7 +9,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.mapstruct.AfterMapping;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -17,11 +16,9 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-// componentModel = "spring" -> Spring Bean olarak tanımlanmasını sağlar
-// unmappedTargetPolicy = ReportingPolicy.IGNORE -> Hedefte olmayan alanlar için hata vermez
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) // Null değerler maplenmez (update için önemli)
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface MallMapper {
 
     // SRID 4326 (WGS 84) için GeometryFactory.

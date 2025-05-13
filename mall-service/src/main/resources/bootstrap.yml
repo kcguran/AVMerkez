@@ -2,34 +2,18 @@
 
 spring:
   application:
-    # Service name - MUST match the config file name (e.g., mall-service.yml) and Eureka ID
+    # Service name - MUST match the config file name (mall-service.yml) and Eureka ID
     name: mall-service
   cloud:
     config:
-      # URI of the Config Server
+      # URI of the Config Server (Ortam değişkeni veya varsayılan)
       uri: ${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
-      label: main # Git branch/tag
-      fail-fast: true
+      label: main # VEYA ${CONFIG_SERVER_LABEL:main}
+      fail-fast: true # Config server'a bağlanamazsa başlama
       retry:
         initial-interval: 1500
         multiplier: 1.5
-        max-interval: 5000
-        max-attempts: 20
+        max-interval: 5000 # Daha uzun bir aralık olabilir
+        max-attempts: 20    # Daha fazla deneme
   config:
     import: "configserver:${spring.cloud.config.uri}"
-
-  # Flyway configuration
-  flyway:
-    baseline-on-migrate: true # Initialize schema history table if schema is not empty
-
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
-
-# Management port for Actuator health checks
-management:
-  server:
-    port: 9090

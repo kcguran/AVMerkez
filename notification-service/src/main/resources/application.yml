@@ -1,11 +1,8 @@
-# Bu dosya artık çoğunlukla boş olabilir veya sadece lokal geliştirme profilleri
-# gibi Config Server'dan *gelmeyecek* ayarları içerebilir.
+# Bu dosya artık çoğunlukla boş olabilir.
 
 spring:
-  # Aktif profili ortam değişkeninden al
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
-
   # Config Server import direktifi bootstrap.yml'de olduğu için burada tekrar gerekmez.
   # config:
   #  import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}

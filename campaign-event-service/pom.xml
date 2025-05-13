@@ -7,18 +7,19 @@
         <groupId>com.avmerkez</groupId>
         <artifactId>avmerkez-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath> <!-- Adjust if necessary -->
     </parent>
 
-    <artifactId>review-service</artifactId>
-    <name>Review Service</name>
-    <description>Review Service for managing user reviews and ratings for malls and stores</description>
+    <artifactId>campaign-event-service</artifactId> <!-- Changed -->
+    <name>Campaign &amp; Event Service</name> <!-- Changed & escaped -->
+    <description>Service for managing campaigns and events</description> <!-- Changed -->
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lombok.version>1.18.30</lombok.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <lombok.version>1.18.30</lombok.version> <!-- Consider managing in parent -->
+        <mapstruct.version>1.5.5.Final</mapstruct.version> <!-- Consider managing in parent -->
     </properties>
 
     <dependencies>
@@ -39,6 +40,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
 
         <!-- Spring Cloud -->
         <dependency>
@@ -49,28 +54,25 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
-        <!-- Bootstrap Dependency (To enable bootstrap.yml/properties processing) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
         </dependency>
-
-        <!-- OpenFeign for service-to-service communication -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+        <!-- <dependency> -->
+            <!-- <groupId>org.springframework.cloud</groupId> -->
+            <!-- <artifactId>spring-cloud-starter-openfeign</artifactId> -->
+        <!-- </dependency> -->
 
         <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.5.Final</version>
+            <!-- Version managed by parent pom -->
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
-            <version>1.5.5.Final</version>
+            <!-- Version managed by parent pom -->
             <scope>provided</scope>
         </dependency>
 
@@ -87,6 +89,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+             <!-- Version managed by parent pom -->
         </dependency>
 
         <!-- Lombok -->
@@ -94,26 +97,26 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+             <!-- Version managed by parent pom -->
         </dependency>
 
-        <!-- Security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
+             <!-- Version managed by parent pom -->
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <scope>runtime</scope>
+             <!-- Version managed by parent pom -->
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
             <scope>runtime</scope>
+             <!-- Version managed by parent pom -->
         </dependency>
 
         <!-- Micrometer Tracing -->
@@ -126,18 +129,32 @@
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
 
-        <!-- Logback JSON Encoder for structured logging -->
+        <!-- Logback JSON Encoder -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
+             <!-- Version managed by parent pom -->
         </dependency>
 
         <!-- API Documentation (OpenAPI) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.5.0</version>
+             <!-- Version managed by parent pom -->
         </dependency>
+
+        <!-- Messaging Placeholders -->
+        <!--
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        -->
 
         <!-- Test -->
         <dependency>
@@ -162,26 +179,6 @@
             <scope>test</scope>
             <!-- Version should be managed by parent pom's dependencyManagement -->
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Messaging (e.g., Kafka or RabbitMQ) - Uncomment and configure when needed for async events -->
-        <!--
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        -->
-
     </dependencies>
 
     <build>
@@ -201,7 +198,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <!-- Version managed by parent pom -->
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -209,12 +206,12 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
+                            <version>${lombok.version}</version> <!-- Or manage in parent -->
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
+                            <version>${mapstruct.version}</version> <!-- Or manage in parent -->
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -224,4 +221,4 @@
             </plugin>
         </plugins>
     </build>
-</project>
+</project> 

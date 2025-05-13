@@ -1,84 +1,13 @@
-# This file can be empty or contain configurations that are NOT managed by the Config Server.
-# All primary configurations (database, eureka, jpa, server port, actuator, etc.)
-# are expected to be fetched from the Spring Cloud Config Server based on:
-# 1. bootstrap.yml (for config server connection and application name)
-# 2. Git Repository (application.yml and mall-service.yml)
+# Bu dosya artık çoğunlukla boş olabilir veya sadece lokal geliştirme profilleri
+# gibi Config Server'dan *gelmeyecek* ayarları içerebilir.
 
-
-# Spring Application Name (MUST match the name used in gateway/discovery)
 spring:
-  application:
-    name: mall-service # Service ID used by Eureka and Gateway
-  config:
-    import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}
+  # Aktif profili ortam değişkeninden al (veya lokal geliştirme için varsayılan ata)
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  # Config Client Configuration
-  cloud:
-    config:
-      uri: http://localhost:8888
-      profile: default
-      label: main
-      fail-fast: true
-      retry:
-        initial-interval: 1000
-        max-interval: 2000
-        max-attempts: 6
-
-  # Datasource Configuration (Will likely move to Config Server)
-  datasource:
-    url: jdbc:postgresql://localhost:5432/mall_db # Replace with your DB details or use Docker
-    username: user # Replace with your DB user
-    password: password # Replace with your DB password
-    driver-class-name: org.postgresql.Driver
-
-  # JPA/Hibernate Configuration (Will likely move to Config Server)
-  jpa:
-    hibernate:
-      # Automatically create/update schema based on entities (use 'validate' or 'none' in prod)
-      ddl-auto: validate
-    # Show SQL statements in logs (useful for development)
-    show-sql: true
-    properties:
-      hibernate:
-        # Use PostgreSQL dialect
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        # Optional: Format SQL logs for better readability
-        format_sql: true
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-
-# Eureka Client Configuration
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    # Use instance ID with random value to allow multiple instances on the same host
-    # instance-id: ${spring.application.name}:${server.port}
-    prefer-ip-address: true
-
-# Springdoc OpenAPI Configuration
-springdoc:
-  api-docs:
-    path: /api-docs # Default path for OpenAPI spec
-  swagger-ui:
-    path: /swagger-ui.html # Default path for Swagger UI
-
-# Actuator Configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, metrics, mappings, configprops # Expose standard endpoints
-  # Micrometer Tracing Configuration
-  tracing:
-    sampling:
-      # Percentage of requests to trace (1.0 = 100%, 0.1 = 10%)
-      # Use 1.0 for development/testing, lower value for production
-      probability: 1.0
-    # B3 propagation format is used by default with brave bridge
-    propagation:
-      type: B3 # Explicitly set (though default with brave) 
+  # Config Server import direktifi bootstrap.yml'de olduğu için burada tekrar gerekmez,
+  # ama bazı Spring versiyonları/yapılandırmaları için burada da olması gerekebilir.
+  # Emin olmak için ikisinden birinde olması yeterlidir.
+  # config:
+  #   import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}

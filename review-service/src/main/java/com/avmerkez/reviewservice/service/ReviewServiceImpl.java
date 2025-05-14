@@ -38,6 +38,16 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     public ReviewDto createReview(CreateReviewRequest request, Long userId) {
+        if (request.getMallId() != null && request.getStoreId() != null) {
+            log.error("Validation error: Both mallId ({}) and storeId ({}) are provided in createReview request.", 
+                      request.getMallId(), request.getStoreId());
+            throw new InvalidInputException("Yorum için AVM veya Mağaza ID'lerinden yalnızca biri belirtilmelidir.");
+        }
+        if (request.getMallId() == null && request.getStoreId() == null) {
+            log.error("Validation error: Both mallId and storeId are null in createReview request.");
+            throw new InvalidInputException("Yorum için AVM veya Mağaza ID belirtilmelidir.");
+        }
+
         validateTargetExistence(request.getMallId(), request.getStoreId());
         
         Review review = reviewMapper.toEntity(request, userId);
@@ -73,9 +83,6 @@ public class ReviewServiceImpl implements ReviewService {
                           storeId, e.status(), e.getMessage(), e);
                 throw new RuntimeException("Mağaza servisi ile iletişim kurulamadı.", e);
             }
-        } else {
-            log.error("Validation error: Both mallId and storeId are null in createReview request.");
-            throw new InvalidInputException("Yorum için AVM veya Mağaza ID belirtilmelidir.");
         }
     }
     

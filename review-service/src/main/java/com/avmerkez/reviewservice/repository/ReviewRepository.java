@@ -14,6 +14,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByMallIdAndApprovalStatus(Long mallId, ApprovalStatus approvalStatus, Pageable pageable);
     Page<Review> findByStoreIdAndApprovalStatus(Long storeId, ApprovalStatus approvalStatus, Pageable pageable);
     Page<Review> findByUserIdAndApprovalStatus(Long userId, ApprovalStatus approvalStatus, Pageable pageable);
+    Page<Review> findByUserId(Long userId, Pageable pageable);
     Page<Review> findByApprovalStatus(ApprovalStatus approvalStatus, Pageable pageable);
     List<Review> findTop5ByMallIdAndApprovalStatusOrderByCreatedAtDesc(Long mallId, ApprovalStatus approvalStatus);
     List<Review> findTop5ByStoreIdAndApprovalStatusOrderByCreatedAtDesc(Long storeId, ApprovalStatus approvalStatus);

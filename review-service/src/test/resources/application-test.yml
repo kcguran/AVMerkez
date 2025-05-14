@@ -1,0 +1,28 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+      fail-fast: false
+      discovery:
+        enabled: false
+    bootstrap:
+      enabled: false
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
+
+# Disable Eureka client
+eureka:
+  client:
+    enabled: false
+    fetch-registry: false
+    register-with-eureka: false
+    service-url:
+      defaultZone: ''
+
+# Testcontainers' PostgreSQL DataSource configuration will be handled by @ServiceConnection
+# No need to define spring.datasource properties here for @DataJpaTest with Testcontainers 

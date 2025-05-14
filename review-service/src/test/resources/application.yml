@@ -1,0 +1,44 @@
+# Test configuration for Repository tests
+# This file is used instead of pulling configs from Config Server
+
+# Disable all Spring Cloud related services
+spring:
+  cloud:
+    bootstrap:
+      enabled: false
+    config:
+      enabled: false
+      fail-fast: false
+      discovery:
+        enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
+  config:
+    # Make sure we don't try to import from config server
+    import: optional:file:./test-properties.yml
+  main:
+    banner-mode: off
+  
+# Disable Eureka
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+# Simple logging configuration for tests
+logging:
+  level:
+    root: WARN
+    org.springframework.test: INFO
+    com.avmerkez.reviewservice: INFO
+    org.hibernate.SQL: DEBUG
+
+# H2 in-memory database could be used for some simple tests instead of Testcontainers
+# spring:
+#   datasource:
+#     url: jdbc:h2:mem:testdb
+#     username: sa
+#     password: password
+#     driver-class-name: org.h2.Driver 

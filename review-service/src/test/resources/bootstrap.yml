@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: review-service-test
+  cloud:
+    config:
+      enabled: false
+      discovery:
+        enabled: false
+      fail-fast: false
+      uri: "http://localhost:9999"  # Non-existent URL to ensure it doesn't try to connect
+  config:
+    import: "optional:configserver:http://localhost:9999"  # Mark as optional and use invalid URL
+  bootstrap:
+    enabled: false 

@@ -3,10 +3,12 @@ package com.avmerkez.campaigneventservice.dto;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import com.avmerkez.campaigneventservice.validator.DateRangeValid;
 
 import java.time.LocalDateTime;
 
 @Data
+@DateRangeValid(start = "startDate", end = "endDate", message = "End date must be after start date")
 public class UpdateCampaignRequest {
 
     @Size(max = 255, message = "Campaign name cannot exceed 255 characters")

@@ -3,16 +3,14 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15 # Güncel PostgreSQL sürümünü kullanabilirsiniz
+    image: postgres:15
     container_name: postgres_db
     environment:
-      # POSTGRES_DB: mall_db # Initial DB, script ile oluşturulacak
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d # init scriptlerini mount et
-      - ./postgres-init/create-review-service-db.sql:/docker-entrypoint-initdb.d/create-review-service-db.sql
+      - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432" # Lokal erişim için (opsiyonel)
     networks:
@@ -49,9 +47,7 @@ services:
     ports:
       - "8888:8888"
     environment:
-      # Docker network içinde discovery server'a ulaşmak için servis adını kullanın
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      # Config server'ın Git deposuna erişimi olmalı (eğer private ise SSH key mount edilebilir)
     depends_on:
       discovery-server:
         condition: service_healthy # Discovery server sağlıklı olmadan başlamasın
@@ -128,13 +124,10 @@ services:
       dockerfile: Dockerfile
     container_name: store-service
     environment:
-      SPRING_APPLICATION_NAME: store-service # bootstrap.yml'deki ile aynı olmalı
+      SPRING_APPLICATION_NAME: store-service
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      # DB bilgileri config server'dan (store-service.yml) gelecek
-      # SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/store_db
-      # SPRING_DATASOURCE_USERNAME: user
-      # SPRING_DATASOURCE_PASSWORD: password
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -173,7 +166,6 @@ services:
     networks:
       - avmerkez-network
     healthcheck:
-      # User service artık 8083 portunda açıkça tanımlanmış
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8083/actuator/health"]
       interval: 30s
       timeout: 10s
@@ -188,16 +180,17 @@ services:
     ports:
       - "8085:8085"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/review_service_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+      SPRING_APPLICATION_NAME: review-service
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
     depends_on:
-      - postgres
-      - discovery-server
-      - config-server
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - avmerkez-network
 

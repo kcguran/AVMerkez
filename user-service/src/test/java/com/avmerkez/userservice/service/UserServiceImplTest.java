@@ -152,4 +152,88 @@ class UserServiceImplTest {
         assertThat(profiles.get(1).getUsername()).isEqualTo(user2.getUsername());
         verify(userRepository).findAll();
     }
+
+    @Test
+    @DisplayName("Favori AVM ekleme başarılı")
+    void addFavoriteMall_Success() {
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        userService.addFavoriteMall(testUser.getId(), 100L);
+        assertThat(testUser.getFavoriteMallIds()).contains(100L);
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("Favori AVM ekleme - zaten favoride")
+    void addFavoriteMall_AlreadyExists() {
+        testUser.getFavoriteMallIds().add(200L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThrows(IllegalArgumentException.class, () -> userService.addFavoriteMall(testUser.getId(), 200L));
+    }
+
+    @Test
+    @DisplayName("Favori AVM silme başarılı")
+    void removeFavoriteMall_Success() {
+        testUser.getFavoriteMallIds().add(300L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        userService.removeFavoriteMall(testUser.getId(), 300L);
+        assertThat(testUser.getFavoriteMallIds()).doesNotContain(300L);
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("Favori AVM silme - favoride yok")
+    void removeFavoriteMall_NotExists() {
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThrows(IllegalArgumentException.class, () -> userService.removeFavoriteMall(testUser.getId(), 400L));
+    }
+
+    @Test
+    @DisplayName("Favori AVM'leri listele")
+    void getFavoriteMalls_ReturnsList() {
+        testUser.getFavoriteMallIds().add(500L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThat(userService.getFavoriteMalls(testUser.getId())).contains(500L);
+    }
+
+    @Test
+    @DisplayName("Favori mağaza ekleme başarılı")
+    void addFavoriteStore_Success() {
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        userService.addFavoriteStore(testUser.getId(), 101L);
+        assertThat(testUser.getFavoriteStoreIds()).contains(101L);
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("Favori mağaza ekleme - zaten favoride")
+    void addFavoriteStore_AlreadyExists() {
+        testUser.getFavoriteStoreIds().add(201L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThrows(IllegalArgumentException.class, () -> userService.addFavoriteStore(testUser.getId(), 201L));
+    }
+
+    @Test
+    @DisplayName("Favori mağaza silme başarılı")
+    void removeFavoriteStore_Success() {
+        testUser.getFavoriteStoreIds().add(301L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        userService.removeFavoriteStore(testUser.getId(), 301L);
+        assertThat(testUser.getFavoriteStoreIds()).doesNotContain(301L);
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("Favori mağaza silme - favoride yok")
+    void removeFavoriteStore_NotExists() {
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThrows(IllegalArgumentException.class, () -> userService.removeFavoriteStore(testUser.getId(), 401L));
+    }
+
+    @Test
+    @DisplayName("Favori mağazaları listele")
+    void getFavoriteStores_ReturnsList() {
+        testUser.getFavoriteStoreIds().add(501L);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        assertThat(userService.getFavoriteStores(testUser.getId())).contains(501L);
+    }
 } 

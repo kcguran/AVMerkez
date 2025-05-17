@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-13T03:14:15+0300",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 23.0.1 (Oracle Corporation)"
+    date = "2025-05-18T01:35:45+0300",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.v20250514-1000, environment: Java 21.0.7 (Eclipse Adoptium)"
 )
 @Component
 public class StoreMapperImpl implements StoreMapper {
@@ -36,13 +36,13 @@ public class StoreMapperImpl implements StoreMapper {
 
         storeDto.setCategoryId( storeCategoryId( store ) );
         storeDto.setBrandId( storeBrandId( store ) );
-        storeDto.setId( store.getId() );
-        storeDto.setName( store.getName() );
-        storeDto.setMallId( store.getMallId() );
-        storeDto.setFloor( store.getFloor() );
         storeDto.setContactInformation( store.getContactInformation() );
         storeDto.setDescription( store.getDescription() );
+        storeDto.setFloor( store.getFloor() );
+        storeDto.setId( store.getId() );
         storeDto.setLogoUrl( store.getLogoUrl() );
+        storeDto.setMallId( store.getMallId() );
+        storeDto.setName( store.getName() );
 
         return storeDto;
     }
@@ -69,15 +69,15 @@ public class StoreMapperImpl implements StoreMapper {
 
         StoreDetailDto storeDetailDto = new StoreDetailDto();
 
-        storeDetailDto.setId( store.getId() );
-        storeDetailDto.setName( store.getName() );
-        storeDetailDto.setMallId( store.getMallId() );
-        storeDetailDto.setFloor( store.getFloor() );
-        storeDetailDto.setCategory( categoryMapper.toCategoryDto( store.getCategory() ) );
         storeDetailDto.setBrand( brandMapper.toBrandDto( store.getBrand() ) );
+        storeDetailDto.setCategory( categoryMapper.toCategoryDto( store.getCategory() ) );
         storeDetailDto.setContactInformation( store.getContactInformation() );
         storeDetailDto.setDescription( store.getDescription() );
+        storeDetailDto.setFloor( store.getFloor() );
+        storeDetailDto.setId( store.getId() );
         storeDetailDto.setLogoUrl( store.getLogoUrl() );
+        storeDetailDto.setMallId( store.getMallId() );
+        storeDetailDto.setName( store.getName() );
 
         return storeDetailDto;
     }
@@ -104,12 +104,12 @@ public class StoreMapperImpl implements StoreMapper {
 
         Store store = new Store();
 
-        store.setName( createStoreRequest.getName() );
-        store.setMallId( createStoreRequest.getMallId() );
-        store.setFloor( createStoreRequest.getFloor() );
         store.setContactInformation( createStoreRequest.getContactInformation() );
         store.setDescription( createStoreRequest.getDescription() );
+        store.setFloor( createStoreRequest.getFloor() );
         store.setLogoUrl( createStoreRequest.getLogoUrl() );
+        store.setMallId( createStoreRequest.getMallId() );
+        store.setName( createStoreRequest.getName() );
 
         return store;
     }
@@ -120,23 +120,23 @@ public class StoreMapperImpl implements StoreMapper {
             return;
         }
 
-        if ( updateStoreRequest.getName() != null ) {
-            store.setName( updateStoreRequest.getName() );
-        }
-        if ( updateStoreRequest.getMallId() != null ) {
-            store.setMallId( updateStoreRequest.getMallId() );
-        }
-        if ( updateStoreRequest.getFloor() != null ) {
-            store.setFloor( updateStoreRequest.getFloor() );
-        }
         if ( updateStoreRequest.getContactInformation() != null ) {
             store.setContactInformation( updateStoreRequest.getContactInformation() );
         }
         if ( updateStoreRequest.getDescription() != null ) {
             store.setDescription( updateStoreRequest.getDescription() );
         }
+        if ( updateStoreRequest.getFloor() != null ) {
+            store.setFloor( updateStoreRequest.getFloor() );
+        }
         if ( updateStoreRequest.getLogoUrl() != null ) {
             store.setLogoUrl( updateStoreRequest.getLogoUrl() );
+        }
+        if ( updateStoreRequest.getMallId() != null ) {
+            store.setMallId( updateStoreRequest.getMallId() );
+        }
+        if ( updateStoreRequest.getName() != null ) {
+            store.setName( updateStoreRequest.getName() );
         }
     }
 

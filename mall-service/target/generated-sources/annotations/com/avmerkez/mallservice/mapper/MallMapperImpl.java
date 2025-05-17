@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-13T03:14:06+0300",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 23.0.1 (Oracle Corporation)"
+    date = "2025-05-18T00:51:15+0300",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.v20250514-1000, environment: Java 21.0.7 (Eclipse Adoptium)"
 )
 @Component
 public class MallMapperImpl implements MallMapper {
@@ -25,14 +25,14 @@ public class MallMapperImpl implements MallMapper {
 
         MallDto mallDto = new MallDto();
 
-        mallDto.setId( mall.getId() );
-        mallDto.setName( mall.getName() );
+        mallDto.setAddress( mall.getAddress() );
         mallDto.setCity( mall.getCity() );
         mallDto.setDistrict( mall.getDistrict() );
-        mallDto.setAddress( mall.getAddress() );
-        mallDto.setWorkingHours( mall.getWorkingHours() );
-        mallDto.setWebsite( mall.getWebsite() );
+        mallDto.setId( mall.getId() );
+        mallDto.setName( mall.getName() );
         mallDto.setPhoneNumber( mall.getPhoneNumber() );
+        mallDto.setWebsite( mall.getWebsite() );
+        mallDto.setWorkingHours( mall.getWorkingHours() );
 
         mapLocationToDto( mall, mallDto );
 
@@ -61,13 +61,13 @@ public class MallMapperImpl implements MallMapper {
 
         Mall.MallBuilder mall = Mall.builder();
 
-        mall.name( createMallRequest.getName() );
         mall.address( createMallRequest.getAddress() );
         mall.city( createMallRequest.getCity() );
         mall.district( createMallRequest.getDistrict() );
-        mall.workingHours( createMallRequest.getWorkingHours() );
-        mall.website( createMallRequest.getWebsite() );
+        mall.name( createMallRequest.getName() );
         mall.phoneNumber( createMallRequest.getPhoneNumber() );
+        mall.website( createMallRequest.getWebsite() );
+        mall.workingHours( createMallRequest.getWorkingHours() );
 
         return mall.build();
     }
@@ -78,9 +78,6 @@ public class MallMapperImpl implements MallMapper {
             return;
         }
 
-        if ( updateMallRequest.getName() != null ) {
-            mall.setName( updateMallRequest.getName() );
-        }
         if ( updateMallRequest.getAddress() != null ) {
             mall.setAddress( updateMallRequest.getAddress() );
         }
@@ -90,14 +87,17 @@ public class MallMapperImpl implements MallMapper {
         if ( updateMallRequest.getDistrict() != null ) {
             mall.setDistrict( updateMallRequest.getDistrict() );
         }
-        if ( updateMallRequest.getWorkingHours() != null ) {
-            mall.setWorkingHours( updateMallRequest.getWorkingHours() );
+        if ( updateMallRequest.getName() != null ) {
+            mall.setName( updateMallRequest.getName() );
+        }
+        if ( updateMallRequest.getPhoneNumber() != null ) {
+            mall.setPhoneNumber( updateMallRequest.getPhoneNumber() );
         }
         if ( updateMallRequest.getWebsite() != null ) {
             mall.setWebsite( updateMallRequest.getWebsite() );
         }
-        if ( updateMallRequest.getPhoneNumber() != null ) {
-            mall.setPhoneNumber( updateMallRequest.getPhoneNumber() );
+        if ( updateMallRequest.getWorkingHours() != null ) {
+            mall.setWorkingHours( updateMallRequest.getWorkingHours() );
         }
 
         mapLocationFromUpdateRequest( updateMallRequest, mall );

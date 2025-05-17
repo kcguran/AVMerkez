@@ -55,10 +55,14 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
         *   JWT (JSON Web Token) tabanlı kullanıcı girişi ve oturum yönetimi.
         *   Rol tabanlı yetkilendirme (USER, ADMIN, AVM_YONETICISI).
         *   Kullanıcı profili görüntüleme ve güncelleme (ad, soyad vb.).
+        *   Kullanıcı şifre güncelleme (mevcut şifre kontrolü ile).
+        *   Kullanıcı rol yönetimi (admin tarafından rollerin güncellenmesi).
         *   Favori AVM/Mağaza listesini yönetme.
     *   **Örnek Kullanıcı Hikayeleri:**
         *   *Bir kullanıcı olarak, favori mağazalarımı kaydedebilmek için sisteme üye olmak istiyorum.*
         *   *Bir kullanıcı olarak, favori AVM'lerimi profilimde görmek ve yönetmek istiyorum.*
+        *   *Bir kullanıcı olarak, şifremi güvenli şekilde değiştirmek istiyorum.*
+        *   *Bir admin olarak, kullanıcıların rollerini yönetebilmek istiyorum.*
 
 *   **Yorum Servisi (Review Service):** Kullanıcıların AVM ve mağazalar hakkındaki yorumlarını ve puanlarını yönetir.
     *   **Özellikler:**
@@ -72,6 +76,7 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
         *   Kampanyaları listeleme (filtreleme: AVM, mağaza, marka, kategori).
         *   Etkinlikleri listeleme (filtreleme: AVM, tarih aralığı, kategori).
         *   Kampanya ve etkinlik detaylarını görüntüleme.
+        *   Kampanya ve etkinlik oluşturma/güncelleme işlemlerinde bitiş tarihi başlangıç tarihinden sonra olmalıdır (tarih aralığı validasyonu).
 
 *   **Arama Servisi (Search Service - Opsiyonel):** Tüm varlıklar üzerinde gelişmiş ve hızlı arama sağlar.
     *   **Özellikler:** AVM, mağaza, marka, kategori, kampanya, etkinlik metinlerinde serbest arama. (Elasticsearch ile implementasyon düşünülebilir).
@@ -85,6 +90,8 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   **Backend Dili/Framework:** Java (En son LTS veya güncel kararlı), Spring Boot (En son kararlı).
 *   **Veritabanı:** PostgreSQL (Tercihen, GIS eklentisi ile) - Her mikroservis kendi DB'sine sahip olabilir.
 *   **API:** RESTful API (JSON), DTO katmanı, API versiyonlama (/api/v1/...), Standart Hata Yönetimi.
+    *   Tüm ana servislerde DTO validasyonları (@NotBlank, @Size, @Email, @Min, @Max, custom validator) eksiksiz uygulanmıştır.
+    *   Swagger/OpenAPI dokümantasyonu tüm endpoint ve DTO'larda eksiksizdir.
 *   **İletişim:** Senkron (REST) ve Asenkron (RabbitMQ/Kafka) iletişim.
 *   **Test:** JUnit 5, Mockito, Testcontainers (Yüksek Unit ve Integration Test kapsamı).
 *   **Kod Kalitesi:** SOLID, Clean Code, Design Patterns, DRY, KISS. Kodlama dili İngilizce.
@@ -115,17 +122,6 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   Versiyonlama (`/v1`, `/v2` vb.).
 *   HATEOAS prensiplerinin değerlendirilmesi.
 
-## 8. Kapsam Dışı (Out of Scope - V1 için)
-
-*   Mobil Uygulama (iOS/Android) arayüzleri.
-*   Web Uygulaması arayüzü.
-*   AVM Yöneticisi paneli ve detaylı yetkileri.
-*   Mağaza Yöneticisi paneli.
-*   Gelişmiş Raporlama ve Analitik özellikleri.
-*   Ödeme sistemleri entegrasyonu (varsa).
-*   Sosyal medya entegrasyonları (paylaşım vb.).
-*   Anlık bildirim (Push Notification) altyapısının tam implementasyonu.
-
 ## 9. Proje Takibi
 
 ### Yapılacaklar (To Do)
@@ -153,6 +149,7 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   [ ] Güvenlik testlerinin (sızma testleri, bağımlılık zafiyet taramaları) düzenli olarak yapılması ve bulguların giderilmesi.
 
 **`user-service` İyileştirmeleri:**
+*   [x] **Favori AVM/Mağaza Yönetimi (User Service):** Kullanıcıların favori AVM ve mağazalarını ekleyip/listeleyip/silebileceği endpointler, entity/dto güncellemeleri, validasyon, Swagger/OpenAPI ve testler tamamlandı.
 *   [ ] `AuthTokenFilter` içinde `UserDetailsServiceImpl.loadUserByUsername()` çağrısı yapılıyor. Bu, her istekte DB'ye gitmek anlamına gelir. Sadece token'daki bilgilere güvenilecekse (ki `store-service` böyle çalışıyor), `user-service` kendi içinde de `UserDetailsServiceImpl.loadUserDetailsFromToken()` benzeri bir yapı kullanabilir veya `loadUserByUsername`'in cache'lenmesi düşünülebilir. Rollerin ve temel kullanıcı bilgilerinin token'dan gelmesi genellikle mikroservisler arası iletişimde yeterlidir. Bu durumun gözden geçirilmesi.
 
 **API Gateway (`api-gateway`) İyileştirmeleri:**
@@ -250,33 +247,4 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   [x] **`secure` Cookie Flag'inin Spring Profiles ile Yönetilmesi (`user-service` -> `JwtUtils`):** `user-service` içindeki `JwtUtils` sınıfına aktif profil bilgisi eklendi ve cookie oluşturma metotlarındaki `secure` flag'i, aktif profile göre (`"prod"` ise `true`) dinamik olarak ayarlandı.
 *   [x] **JWT Claim ve `secure` Flag Güncellemelerinin Diğer Servislere Uygulanması:**
     *   [x] **`api-gateway`:** `application.yml` dosyasına `jwtIssuer` ve `jwtAudience` eklendi. `JwtUtilGateway.java` güncellenerek bu claim'leri okuması ve `validateToken` metodunda kontrol etmesi sağlandı.
-    *   [x] **`store-service`:** `application.yml` dosyasına `jwtIssuer` ve `jwtAudience` eklendi. `JwtUtils.java` güncellenerek bu claim'leri okuması, token üretme metotlarında (`generateJwtToken`, `generateTokenFromUsername`) kullanması ve `validateJwtToken` metodunda kontrol etmesi sağlandı. Aktif profil bilgisi de eklendi.
-*   [x] **Merkezi Konfigürasyon (`jwtSecret` Senkronizasyonu):** JWT ayarlarının `config-server` üzerinden merkezi yönetimi için adımlar atıldı; ilgili servislerin (`user-service`, `api-gateway`, `store-service`) yerel `application.yml` dosyaları ve Java kodlarındaki `@Value` default değerleri güncellendi.
-*   [x] **HTTPS Zorunluluğu (Production) Kontrolü:** `user-service`'te cookie'ler için `secure` flag'inin üretim ortamında aktifleştiği doğrulandı.
-*   [~] **Merkezi Loglama (Başlangıç):** `user-service` için `logstash-logback-encoder` bağımlılığı ve yapılandırılmış JSON loglamaya uygun temel `logback-spring.xml` eklendi.
-*   [x] **Merkezi Loglama Genişletilmesi:** `logstash-logback-encoder` bağımlılığı diğer servislerde (`store-service`, `api-gateway`, `mall-service`) teyit edildi ve standart `logback-spring.xml` bu servislere kopyalandı.
-*   [x] **`store-service` İyileştirmeleri Tamamlandı:**
-    *   [x] `UserDetailsServiceImpl.loadUserDetailsFromToken` ve `JwtUtils.validateJwtToken` `iss`, `aud` claim kontrolleri teyit edildi.
-    *   [x] `Store` entity ve DTO'larındaki alanların (contactInformation, description, logoUrl) varlığı teyit edildi.
-    *   [x] `Category` entity'sine `iconUrl` eklendi, Flyway script (V6) oluşturuldu, `CategoryMapper` güncellendi. `parentId` ve `iconUrl` alanlarının DTO'larda olduğu teyit edildi.
-    *   [x] `store-service` `SecurityConfig`'in JWT cookie entegrasyonunun tamamlandığı teyit edildi.
-*   [x] **`mall-service` Geliştirmeleri (Kısmi):**
-    *   [x] API dokümantasyonu detaylandırıldı: `OpenApiConfig.java` oluşturuldu, Controller ve DTO'lara SpringDoc anotasyonları eklendi/güncellendi.
-    *   [x] `Mall` entity'sine PRD'deki eksik alanlar (latitude, longitude, workingHours, website, phoneNumber, services, floorPlans, popularityScore) eklendi, Flyway script (V2) oluşturuldu.
-    *   [x] `getAllMalls` için `city` ve `district` bazlı filtreleme `MallRepository` ve `MallServiceImpl` üzerinde implemente edildi.
-    *   [x] `MallMapper.java` güncellenerek `Point` (Entity) ve `latitude`/`longitude` (DTO) arasında dönüşüm sağlandı.
-    *   [x] **Konum Bazlı Arama Özelliği Eklendi:**
-        *   `MallRepository`'ye `ST_DWithin` kullanan native query ile yakın AVM'leri bulma metodu eklendi.
-        *   `MallService` ve `MallController` (`/api/v1/malls/near` endpoint'i) bu özelliği kullanacak şekilde güncellendi.
-        *   İlgili Repository, Service ve Controller katmanları için testler yazıldı/güncellendi.
-*   [x] **API Yanıt Standardizasyonu (`mall-service`):**
-    *   [x] `GenericApiResponse<T>` DTO'su oluşturuldu ve `MallController`'daki başarılı yanıtlar bu DTO ile sarmalandı.
-    *   [x] Entegrasyon testleri yeni yanıt yapısına göre güncellendi.
-*   [x] **Refresh Token Mekanizması:** Complete refresh token implementation with database storage, token rotation, and secure cookie usage. Added expiration and revocation mechanisms for tokens.
-*   [x] `RefreshTokenService` implementasyonu ve `refresh-token` endpoint'i tamamlandı.
-*   [x] Login ve logout işlemlerinde refresh token yönetimi ve uygun cookie handling implemente edildi.
-*   [x] `AuthTokenFilter` gerekli durumlarda refresh token geçerli ise yeni erişim token'ı oluşturacak şekilde güncellendi.
-*   [x] Refresh tokenlar için veritabanında `revoked` ve `created_at` alanları eklendi.
-*   [x] **Review Service başlangıç:** Review Service modülü oluşturuldu, entity ve veritabanı tabloları tasarlandı. Yorum ekleme, listeleme ve onaylama işlemleri için altyapı hazırlandı.
-*   [x] `review-service` Docker entegrasyonu yapıldı.
-*   [x] **Review Service tamamlandı:** Repository, Service, Controller katmanları ve JWT güvenlik mekanizması eklendi. Kullanıcıların AVM ve mağazalar için yorum eklemesi, adminlerin onaylaması ve tüm kullanıcıların yorumları listelemesi için API'ler eklendi.
+    *   [x] **`store-service`:** `

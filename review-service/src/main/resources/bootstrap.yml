@@ -1,14 +1,10 @@
-# Bootstrap configurations - loaded before application.yml
-
 spring:
   application:
-    # Service name - MUST match the config file name (review-service.yml) and Eureka ID
     name: review-service
   cloud:
     config:
-      # URI of the Config Server (Ortam değişkeni veya varsayılan)
       uri: ${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
-      label: main # VEYA ${CONFIG_SERVER_LABEL:main}
+      label: main
       fail-fast: true
       retry:
         initial-interval: 1500
@@ -16,7 +12,4 @@ spring:
         max-interval: 10000
         max-attempts: 6
   config:
-    # Config Server'dan konfigürasyonları içe aktar
     import: "configserver:${spring.cloud.config.uri}"
-
-# !!! DİĞER TÜM AYARLAR BU DOSYADAN KALDIRILMALIDIR !!!

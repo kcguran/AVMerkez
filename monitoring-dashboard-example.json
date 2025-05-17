@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "title": "AVMerkez Microservices Monitoring",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Kafka Event Rate",
+        "targets": [
+          { "expr": "sum(rate(kafka_consumer_records_consumed_total[1m])) by (topic)", "legendFormat": "{{topic}}" }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Kafka Consumer Lag",
+        "targets": [
+          { "expr": "sum(kafka_consumer_lag) by (topic)", "legendFormat": "{{topic}}" }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Service Health",
+        "targets": [
+          { "expr": "up{job=~\".*-service\"}", "legendFormat": "{{instance}}" }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "HTTP Response Time",
+        "targets": [
+          { "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, service))", "legendFormat": "{{service}}" }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Error Rate",
+        "targets": [
+          { "expr": "sum(rate(logback_events_total{level=\"ERROR\"}[1m])) by (service)", "legendFormat": "{{service}}" }
+        ]
+      }
+    ]
+  }
+} 

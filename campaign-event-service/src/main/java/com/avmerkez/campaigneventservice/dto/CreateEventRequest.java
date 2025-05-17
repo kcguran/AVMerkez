@@ -5,10 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import com.avmerkez.campaigneventservice.validator.DateRangeValid;
 
 import java.time.LocalDateTime;
 
 @Data
+@DateRangeValid(start = "startDate", end = "endDate", message = "End date must be after start date")
 public class CreateEventRequest {
 
     @NotBlank(message = "Event name cannot be blank")
@@ -23,7 +25,6 @@ public class CreateEventRequest {
     private LocalDateTime startDate;
 
     @NotNull(message = "End date cannot be null")
-    // TODO: Add custom validator to ensure end date is after start date
     private LocalDateTime endDate;
 
     @NotBlank(message = "Description cannot be blank")

@@ -4,7 +4,9 @@
 CREATE DATABASE mall_db;
 CREATE DATABASE store_db;
 CREATE DATABASE user_db;
+CREATE DATABASE review_db;
 
 -- Grant privileges if needed (example)
 -- GRANT ALL PRIVILEGES ON DATABASE mall_db TO user;
--- GRANT ALL PRIVILEGES ON DATABASE store_db TO user; 
+-- GRANT ALL PRIVILEGES ON DATABASE store_db TO user;
+GRANT ALL PRIVILEGES ON DATABASE review_db TO "user"; 

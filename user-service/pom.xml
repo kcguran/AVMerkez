@@ -20,6 +20,7 @@
         <lombok.version>1.18.30</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jjwt.version>0.11.5</jjwt.version> <!-- Güncel JWT sürümü -->
+        <springdoc.version>2.2.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -119,6 +120,12 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- Spring Boot Test -->

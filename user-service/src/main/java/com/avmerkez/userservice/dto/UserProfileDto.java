@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Kullanıcı profil bilgilerini taşıyan DTO
@@ -22,6 +23,16 @@ public class UserProfileDto {
     private String lastName;
     private List<String> roles;
     private LocalDateTime createdAt;
+    
+    /**
+     * Kullanıcının favori AVM ID'leri
+     */
+    private Set<Long> favoriteMallIds;
+
+    /**
+     * Kullanıcının favori mağaza ID'leri
+     */
+    private Set<Long> favoriteStoreIds;
     
     // İleriki aşamalarda favoriler, yorumlar vs. eklenebilir
 } 

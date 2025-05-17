@@ -60,6 +60,22 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_favorite_malls", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "mall_id")
+    /**
+     * Kullanıcının favori AVM ID'leri
+     */
+    private Set<Long> favoriteMallIds = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_favorite_stores", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "store_id")
+    /**
+     * Kullanıcının favori mağaza ID'leri
+     */
+    private Set<Long> favoriteStoreIds = new HashSet<>();
+
     // favoriAvmler, favoriMagazalar will be handled later, possibly in separate tables/services
 
     public User(String username, String email, String password, String firstName, String lastName) {

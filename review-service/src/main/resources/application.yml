@@ -9,7 +9,3 @@ spring:
   # Config Server import direktifi bootstrap.yml'de olduğu için burada tekrar gerekmez.
   # config:
   #   import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
-
-# !!! DİĞER TÜM AYARLAR (Port, Datasource, JPA, Flyway, Eureka, Actuator, Tracing, Logging, Springdoc vb.)
-# BU DOSYADAN KALDIRILMALIDIR !!!
-# Onlar artık Config Server'dan gelecek.

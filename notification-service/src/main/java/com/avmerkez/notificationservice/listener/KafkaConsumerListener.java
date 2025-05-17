@@ -1,6 +1,9 @@
 package com.avmerkez.notificationservice.listener;
 
 import com.avmerkez.notificationservice.dto.event.UserRegisteredEventDto;
+import com.avmerkez.notificationservice.dto.event.CampaignCreatedEventDto;
+import com.avmerkez.notificationservice.dto.event.EventCreatedEventDto;
+import com.avmerkez.notificationservice.dto.event.ReviewCreatedEventDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,9 +14,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaConsumerListener {
-
-    // Inject necessary services like EmailService, PushNotificationService etc.
-    // private final EmailService emailService;
 
     @KafkaListener(topics = "${avmerkez.kafka.topics.user-registration}", 
                    groupId = "${spring.kafka.consumer.group-id}",
@@ -33,6 +33,24 @@ public class KafkaConsumerListener {
             log.error("Failed to process user registration notification for user ID {}: {}", event.getUserId(), e.getMessage(), e);
             // Consider retry mechanisms or dead-letter queue for failed processing
         }
+    }
+
+    @KafkaListener(topics = "${avmerkez.kafka.topics.campaign-created}", groupId = "${spring.kafka.consumer.group-id}")
+    public void handleCampaignCreatedEvent(@Payload CampaignCreatedEventDto event) {
+        log.info("Received CampaignCreatedEvent from Kafka: Campaign ID = {}, Name = {}", event.getCampaignId(), event.getName());
+        // TODO: Kampanya bildirimi işlemleri (ör: push notification)
+    }
+
+    @KafkaListener(topics = "${avmerkez.kafka.topics.event-created}", groupId = "${spring.kafka.consumer.group-id}")
+    public void handleEventCreatedEvent(@Payload EventCreatedEventDto event) {
+        log.info("Received EventCreatedEvent from Kafka: Event ID = {}, Name = {}", event.getEventId(), event.getName());
+        // TODO: Etkinlik bildirimi işlemleri (ör: push notification)
+    }
+
+    @KafkaListener(topics = "${avmerkez.kafka.topics.review-created}", groupId = "${spring.kafka.consumer.group-id}")
+    public void handleReviewCreatedEvent(@Payload ReviewCreatedEventDto event) {
+        log.info("Received ReviewCreatedEvent from Kafka: Review ID = {}, User ID = {}", event.getReviewId(), event.getUserId());
+        // TODO: Yorum bildirimi işlemleri
     }
 
     // Add other listeners for different topics/events here

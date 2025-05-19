@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -18,7 +19,8 @@ import java.util.List;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = {FacilityMapper.class})
 public interface MallMapper {
 
     // SRID 4326 (WGS 84) için GeometryFactory.
@@ -95,6 +97,7 @@ public interface MallMapper {
     //     }
     // }
 
+    @Mapping(target = "facilities", source = "facilities")
     MallDto toMallDto(Mall mall);
 
     List<MallDto> toMallDtoList(List<Mall> malls);

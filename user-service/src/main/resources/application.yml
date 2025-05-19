@@ -6,3 +6,15 @@ spring:
   # Config Server import direktifi bootstrap.yml'de olduğu için burada tekrar gerekmez.
   # config:
   #  import: optional:configserver:${spring.cloud.config.uri:http://localhost:8888}
+  redis:
+    host: localhost
+    port: 6379
+
+# Production için Redis cluster ayarları örneği:
+# spring:
+#   redis:
+#     host: redis-cluster-host
+#     port: 6379
+#     password: yourpassword
+#     cluster:
+#       nodes: ...

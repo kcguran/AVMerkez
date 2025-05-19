@@ -46,11 +46,11 @@ class MallServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // Her testten önce kullanılacak örnek verileri hazırla
-        mall = Mall.builder().id(1L).name("Test Mall").city("Test City").district("Test District").address("Test Address").build();
-        mallDto = new MallDto(1L, "Test Mall", "Test City", "Test District", "Test Address", 39.92, 32.85, "10-22", "web.com", "123");
-        createMallRequest = new CreateMallRequest("Test Mall", "Test Address", "Test City", "Test District", 39.92, 32.85, "10-22", "web.com", "123");
-        updateMallRequest = new UpdateMallRequest("Updated Mall", "Updated Address", "Updated City", "Updated District", 39.93, 32.86, "09-23", "newweb.com", "456");
+        // Test verileri hazırlanıyor
+        mall = Mall.builder().id(1L).name("Ankara Panora AVM").city("Ankara").district("Çankaya").address("Turan Güneş Bulvarı No:182").build();
+        mallDto = new MallDto(1L, "Ankara Panora AVM", "Ankara", "Çankaya", "Turan Güneş Bulvarı No:182", 39.87, 32.85, "10:00-22:00", "https://panora.com.tr", "+90 312 491 2525");
+        createMallRequest = new CreateMallRequest("Ankara Panora AVM", "Turan Güneş Bulvarı No:182", "Ankara", "Çankaya", 39.87, 32.85, "10:00-22:00", "https://panora.com.tr", "+90 312 491 2525");
+        updateMallRequest = new UpdateMallRequest("Ankara Next Level", "Eskişehir Yolu No:3", "Ankara", "Çankaya", 39.91, 32.78, "09:00-23:00", "https://nextlevel.com.tr", "+90 312 999 9999");
     }
 
     @Test
@@ -102,17 +102,14 @@ class MallServiceImplTest {
     @Test
     void getAllMalls_ShouldReturnListOfMallDtos() {
         // Arrange
-        String cityFilter = null; // veya test için bir değer
-        String districtFilter = null; // veya test için bir değer
+        String cityFilter = "Ankara";
+        String districtFilter = "Çankaya";
         List<Mall> mallList = Collections.singletonList(mall);
         List<MallDto> mallDtoList = Collections.singletonList(mallDto);
-        // TODO: Depoya filtre parametreleri eklendiğinde mock'u güncelle
         when(mallRepository.findAll()).thenReturn(mallList);
         when(mallMapper.toMallDtoList(anyList())).thenReturn(mallDtoList);
-
         // Act
-        List<MallDto> result = mallService.getAllMalls(cityFilter, districtFilter); // Parametreler eklendi
-
+        List<MallDto> result = mallService.getAllMalls(cityFilter, districtFilter);
         // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());

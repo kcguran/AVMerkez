@@ -30,7 +30,7 @@ public class LogNotificationStrategy implements NotificationStrategy {
 
     @Override
     public boolean supports(NotificationType notificationType, TargetPlatform targetPlatform) {
-        // Bu strateji, test amacıyla tüm e-posta ve web push bildirimlerini loglar.
+        // Tüm e-posta ve web push bildirimlerini loglar (test amaçlı).
         return targetPlatform == TargetPlatform.EMAIL || targetPlatform == TargetPlatform.WEB_PUSH;
     }
 } 

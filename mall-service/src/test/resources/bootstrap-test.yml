@@ -4,23 +4,20 @@ spring:
   profiles:
     active: test
   application:
-    # Service name - MUST match the config file name (e.g., mall-service.yml) and Eureka ID
-    name: mall-service-test # Test için farklı bir isim de verebiliriz, Eureka'da karışmaması için
+    name: mall-service-test
   cloud:
     bootstrap:
-      enabled: false # Disable Spring Cloud Bootstrap context for tests
+      enabled: false
     config:
-      # URI of the Config Server - Testlerde kullanılmayacak
-      # uri: http://localhost:8888 
-      enabled: false # Config Server'ı testler için devre dışı bırak
-      fail-fast: false # Config Server bulunamazsa hata verme
+      enabled: false
+      fail-fast: false
       import-check:
-        enabled: false # İmport kontrolünü kapat
+        enabled: false
     discovery:
-      enabled: false # Service discovery'i kapat
+      enabled: false
     service-registry:
       auto-registration:
-        enabled: false # Service registry'e otomatik kaydı kapat
+        enabled: false
   config:
     import: optional:classpath:/
 
@@ -28,30 +25,26 @@ spring:
 logging:
   level:
     root: INFO
-    org.springframework.cloud.config: OFF # ÖZEL: Config Client loglarını kapat
-    org.springframework.boot.context.config: OFF # ÖZEL: Config ile ilgili diğer logları kapat
+    org.springframework.cloud.config: OFF
+    org.springframework.boot.context.config: OFF
     com.avmerkez: DEBUG
 
 # Flyway configuration for tests (Testcontainers ile yönetilecekse burası pasif olabilir)
 flyway:
-  enabled: false # Testlerde Flyway'i devre dışı bırakabiliriz, şemayı Testcontainers veya ddl-auto yönetsin
-  # baseline-on-migrate: true 
+  enabled: false
 
 # Eureka Client Configuration (Testlerde Eureka'ya bağlanması gerekmeyebilir)
 eureka:
   client:
-    enabled: false # Testlerde Eureka'yı devre dışı bırak
+    enabled: false
     registerWithEureka: false
     fetchRegistry: false
-  # instance:
-    # prefer-ip-address: true
 
 # Management port for Actuator health checks (Testlerde farklı bir port kullanılabilir veya actuator devre dışı bırakılabilir)
 # management:
 #   server:
-#     port: 9091 # Testler için farklı bir port
+#     port: 9091
 #   endpoints:
 #     web:
 #       exposure:
-#         include: "*" # Testlerde tüm actuator endpoint'lerini açabiliriz veya kapatabiliriz
-#     enabled-by-default: false # Testlerde actuator'ı varsayılan olarak kapat 
+#         include: "*" 

@@ -97,9 +97,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(readOnly = true)
     public List<StoreDto> getStoresByMallId(Long mallId) {
-        // Optional: validateMallExists(mallId); if we want to ensure mall exists even when just listing its stores.
-        // However, if mall-service is down, this would prevent listing existing stores.
-        // For now, we allow listing stores even if mall validation fails here, assuming data integrity.
+        // Mall doğrulaması burada yapılmaz, sadece mevcut mağazalar listelenir.
         return storeMapper.toStoreDtoList(storeRepository.findByMallId(mallId));
     }
 
@@ -127,7 +125,6 @@ public class StoreServiceImpl implements StoreService {
         if (!categoryRepository.existsById(categoryId)) {
             throw new EntityNotFoundException("Category not found with id: " + categoryId);
         }
-        // Optional: validateMallExists(mallId);
         return storeMapper.toStoreDtoList(storeRepository.findByMallIdAndCategoryId(mallId, categoryId));
     }
 
@@ -137,7 +134,6 @@ public class StoreServiceImpl implements StoreService {
         if (!brandRepository.existsById(brandId)) {
             throw new EntityNotFoundException("Brand not found with id: " + brandId);
         }
-        // Optional: validateMallExists(mallId);
         return storeMapper.toStoreDtoList(storeRepository.findByMallIdAndBrandId(mallId, brandId));
     }
 

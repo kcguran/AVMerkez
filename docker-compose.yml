@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
-      - "5432:5432" # Lokal erişim için (opsiyonel)
+      - "5432:5432"
     networks:
       - avmerkez-network
     healthcheck:
@@ -23,64 +23,64 @@ services:
 
   # Discovery Server (Eureka)
   discovery-server:
-    build:
-      context: ./discovery-server # Modülün konumu
-      dockerfile: Dockerfile # Eğer modül içinde Dockerfile varsa (aşağıda oluşturacağız)
+    build: ./discovery-server
     container_name: discovery-server
     ports:
       - "8761:8761"
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 30s # Başlangıç için ek süre
+      start_period: 30s
 
   # Config Server
   config-server:
-    build:
-      context: ./config-server
-      dockerfile: Dockerfile
+    build: ./config-server
     container_name: config-server
     ports:
       - "8888:8888"
+    volumes:
+      - ./avmerkez-config-repo:/config
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=native
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
     depends_on:
       discovery-server:
-        condition: service_healthy # Discovery server sağlıklı olmadan başlamasın
+        condition: service_healthy
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8888/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # API Gateway
   api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+    build: ./api-gateway
     container_name: api-gateway
     ports:
       - "8080:8080"
     environment:
-      # Config ve Discovery server adreslerini override edelim
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_CLOUD_CONFIG_FAIL_FAST=true
     depends_on:
       discovery-server:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 20
@@ -88,118 +88,122 @@ services:
 
   # Mall Service
   mall-service:
-    build:
-      context: ./mall-service
-      dockerfile: Dockerfile
+    image: eclipse-temurin:17-jdk
     container_name: mall-service
-    # ports: # Rastgele port atandığı için maplemeye gerek yok, gateway üzerinden erişilecek
-    environment:
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      # Veritabanı bağlantı bilgilerini override edelim (Config Server'dan da alabilir)
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mall_db
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "9090:9090"
+    command: echo "Mall Service placeholder - service will be implemented later"
     depends_on:
-      postgres:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
+      - postgres
     networks:
       - avmerkez-network
-    healthcheck:
-      # Actuator endpoint'ini kontrol et
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
 
   # Store Service
   store-service:
-    build:
-      context: ./store-service
-      dockerfile: Dockerfile
+    image: eclipse-temurin:17-jdk
     container_name: store-service
-    environment:
-      SPRING_APPLICATION_NAME: store-service
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-
+    ports:
+      - "9091:9091"
+    command: echo "Store Service placeholder - service will be implemented later"
     depends_on:
-      postgres:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
+      - postgres
     networks:
       - avmerkez-network
-    healthcheck:
-      # Actuator endpoint'ini kontrol et
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 70s # Diğerlerinden sonra başlasın
 
   # User Service
   user-service:
-    build:
-      context: ./user-service
-      dockerfile: Dockerfile
+    image: eclipse-temurin:17-jdk
     container_name: user-service
-    environment:
-      SPRING_APPLICATION_NAME: user-service
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      # DB and JWT secrets will be fetched from Config Server (user-service.yml)
+    ports:
+      - "8083:8083"
+    command: echo "User Service placeholder - service will be implemented later"
     depends_on:
-      postgres:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
+      - postgres
+    networks:
+      - avmerkez-network
+
+  review-service:
+    image: eclipse-temurin:17-jdk
+    container_name: review-service
+    ports:
+      - "8085:8085"
+    command: echo "Review Service placeholder - service will be implemented later"
+    depends_on:
+      - postgres
+    networks:
+      - avmerkez-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    networks:
+      - avmerkez-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - avmerkez-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - avmerkez-network
+
+  search-service:
+    image: eclipse-temurin:17-jdk
+    container_name: search-service
+    ports:
+      - "8086:8086"
+    command: echo "Search Service placeholder - service will be implemented later"
+    depends_on:
+      - elasticsearch
+      - kafka
+    networks:
+      - avmerkez-network
+
+  # Redis for Rate Limiting
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8083/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 20
-      start_period: 100s
-
-  review-service:
-    container_name: review-service
-    build:
-      context: ./review-service
-      dockerfile: Dockerfile
-    ports:
-      - "8085:8085"
-    environment:
-      SPRING_APPLICATION_NAME: review-service
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
-    depends_on:
-      postgres:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-    networks:
-      - avmerkez-network
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 # Volumes Definition
 volumes:
   postgres_data:
     driver: local
 
-# Network Definition
+# Networks Definition
 networks:
   avmerkez-network:
     driver: bridge 

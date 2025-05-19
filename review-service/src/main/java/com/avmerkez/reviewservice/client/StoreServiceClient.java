@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * Feign client for communicating with store-service.
  */
-@FeignClient(name = "store-service", path = "/api/v1/stores")
+@FeignClient(name = "store-service", path = "/api/v1/stores", fallback = StoreServiceClient.Fallback.class)
 public interface StoreServiceClient {
 
     /**
@@ -22,4 +22,11 @@ public interface StoreServiceClient {
      */
     @RequestMapping(method = RequestMethod.HEAD, value = "/{storeId}/exists")
     ResponseEntity<Void> checkStoreExists(@PathVariable("storeId") Long storeId);
+
+    class Fallback implements StoreServiceClient {
+        @Override
+        public ResponseEntity<Void> checkStoreExists(Long storeId) {
+            throw new IllegalStateException("Store service is unavailable (fallback)");
+        }
+    }
 } 

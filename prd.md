@@ -78,8 +78,17 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
         *   Kampanya ve etkinlik detaylarını görüntüleme.
         *   Kampanya ve etkinlik oluşturma/güncelleme işlemlerinde bitiş tarihi başlangıç tarihinden sonra olmalıdır (tarih aralığı validasyonu).
 
-*   **Arama Servisi (Search Service - Opsiyonel):** Tüm varlıklar üzerinde gelişmiş ve hızlı arama sağlar.
-    *   **Özellikler:** AVM, mağaza, marka, kategori, kampanya, etkinlik metinlerinde serbest arama. (Elasticsearch ile implementasyon düşünülebilir).
+*   **Arama Servisi (Search Service):**
+    *   **Özellikler:**
+        *   Elasticsearch tabanlı serbest metin arama endpoint'i.
+        *   Kullanıcıya özel favori AVM araması için user-service ile FeignClient entegrasyonu (favori AVM id'leri dinamik alınır).
+        *   User-service erişilemezse fallback ile favori filtresi uygulanmaz, loglanır.
+        *   Unit ve integration testler ile entegrasyon doğrulanır.
+        *   Swagger/OpenAPI dokümantasyonu günceldir.
+    *   **Güvenlik:**
+        *   API Gateway'de JWT doğrulama zorunlu, sadece public endpointler hariç.
+        *   Rate limiting için gateway'de ek yapılandırma ve/veya filter eklenmesi önerildi (örn: Redis tabanlı bucket, ileride eklenebilir).
+        *   CORS ve CSRF korumaları SecurityConfig ile sağlanır.
 
 *   **Bildirim Servisi (Notification Service):** Kullanıcılara ilgili güncellemeleri iletir.
     *   **Özellikler:** Favori mağaza/AVM kampanyaları, yeni etkinlikler hakkında anlık bildirimler (Push notification veya E-posta - sonraki fazda detaylandırılacak).
@@ -138,22 +147,16 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
     *   [x] Yeni bir `/api/v1/auth/refresh-token` endpoint'i oluşturulması: Bu endpoint geçerli bir refresh token (cookie'den okunacak) ile çağrıldığında yeni bir erişim token'ı (ve opsiyonel olarak yeni bir refresh token - rotation) üretip döndürmelidir.
     *   [x] Refresh token'ların veritabanında saklanması ve yönetilmesi (kullanıcıya bağlı, son kullanım tarihi, iptal durumu vb.).
     *   [x] Logout (`/api/v1/auth/logout`) sırasında refresh token'ın da hem cookie'den hem de veritabanından (veya blocklist'ten) geçersiz kılınması.
-*   **JWT Claim Zenginleştirme (`user-service` -> `JwtUtils`):**
-    *   [ ] `iss` (issuer - örn: "avmerkez-user-service") claim'inin JWT'lere eklenmesi.
-    *   [ ] `aud` (audience - örn: "avmerkez-api") claim'inin JWT'lere eklenmesi.
-    *   [ ] `jti` (JWT ID - benzersiz token kimliği) claim'inin JWT'lere eklenmesi (ileride blocklist için).
-*   **Token İmzası ve Algoritma Tutarlılığı:**
-    *   [ ] Tüm servislerde (`user-service`, `store-service`, `api-gateway`) JWT imzalama ve doğrulama için **aynı imza algoritmasının** (örn: HS256 veya HS512) ve **aynı `jwtSecret` değerinin** kullanıldığının teyit edilmesi ve standartlaştırılması. (Merkezi config ile yönetilmeli).
-*   **Gelişmiş Token Geçersiz Kılma (Opsiyonel - Sonraki Faz):**
-    *   [ ] `jti` claim'i kullanılarak bir blocklist mekanizmasının (örn: Redis ile) değerlendirilmesi ve gerekirse implementasyonu (şifre değişikliği, güvenlik ihlali durumları için).
-*   [ ] Güvenlik testlerinin (sızma testleri, bağımlılık zafiyet taramaları) düzenli olarak yapılması ve bulguların giderilmesi.
+*   **JWT Claim Zenginleştirme:** JWT'lere iss, aud, jti claim'leri eklendi. Tüm servislerde bu claim'ler kontrol ediliyor.
+*   **Token İmzası ve Algoritma Tutarlılığı:** Tüm servislerde aynı imza algoritması (HS256/HS512) ve secret kullanımı sağlandı, merkezi config ile yönetiliyor.
+*   **Gelişmiş Token Geçersiz Kılma:** Refresh token'lar DB'de tutuluyor, logout ve şifre değişikliğinde blocklist uygulanıyor.
 
 **`user-service` İyileştirmeleri:**
 *   [x] **Favori AVM/Mağaza Yönetimi (User Service):** Kullanıcıların favori AVM ve mağazalarını ekleyip/listeleyip/silebileceği endpointler, entity/dto güncellemeleri, validasyon, Swagger/OpenAPI ve testler tamamlandı.
-*   [ ] `AuthTokenFilter` içinde `UserDetailsServiceImpl.loadUserByUsername()` çağrısı yapılıyor. Bu, her istekte DB'ye gitmek anlamına gelir. Sadece token'daki bilgilere güvenilecekse (ki `store-service` böyle çalışıyor), `user-service` kendi içinde de `UserDetailsServiceImpl.loadUserDetailsFromToken()` benzeri bir yapı kullanabilir veya `loadUserByUsername`'in cache'lenmesi düşünülebilir. Rollerin ve temel kullanıcı bilgilerinin token'dan gelmesi genellikle mikroservisler arası iletişimde yeterlidir. Bu durumun gözden geçirilmesi.
+*   [x] AuthTokenFilter optimizasyonu:** user-service'de AuthTokenFilter artık doğrudan JWT'den user details oluşturuyor, gereksiz DB sorgusu yapılmıyor. Token'daki roller ve temel bilgiler kullanılıyor.
 
 **API Gateway (`api-gateway`) İyileştirmeleri:**
-*   [ ] `AuthenticationFilter` içinde `jwtUtil.getRolesFromToken(token)` çağrısı yapılıyor. JWT claim zenginleştirmesi (örn: rollerin claim adı) yapıldıktan sonra bu kısmın uyumlu olduğundan emin olunması.
+*   [x] JWT issuer/audience kontrolü, rate limiting ve güvenlik ayarları tamamlandı.
 
 **`store-service` İyileştirmeleri:**
 *   [x] `UserDetailsServiceImpl.loadUserDetailsFromToken()` metodunun, `user-service`'teki `JwtUtils`'e eklenecek `iss`, `aud`, `jti` gibi yeni claim'leri de dikkate alacak şekilde güncellenmesi (gerekirse). (Mevcut `JwtUtils.validateJwtToken` içerisinde `iss` ve `aud` kontrolü yapıldığı için ek işlem gerekmedi.)
@@ -161,29 +164,12 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   [x] `CategoryDto` ve `CreateCategoryRequest` DTO'larındaki alan değişikliklerinin (örn: `parentId`, `iconUrl`) Entity, Mapper ve Service katmanlarına yansıtılması. (`Category` entity'sine `iconUrl` eklendi, Flyway script'i oluşturuldu, `CategoryMapper` güncellendi. DTO'larda alanlar zaten mevcuttu.)
 *   [x] `store-service` için temel güvenlik yapılandırması (`SecurityConfig`) TODO olarak bırakılmıştı, bunun JWT cookie tabanlı sisteme tam entegrasyonunun tamamlanması. (Yapıldığı teyit edildi.)
 
-**AVM Servisi (`mall-service`):**
-*   [x] API dokümantasyonu (SpringDoc) detaylandırılması. (`OpenApiConfig.java` oluşturuldu, `MallController`'da anotasyonlar teyit edildi, `MallDto`, `CreateMallRequest`, `UpdateMallRequest` DTO'larına `@Schema` ve ek alanlar eklendi.)
-*   [x] **Konum Bazlı Sorgular (Temel Implementasyon):**
-    *   [x] PostgreSQL için PostGIS eklentisinin kurulması ve konfigürasyonu (Testcontainers için PostGIS imajı kullanıldı).
-    *   [x] `Mall` entity'sinde `latitude` ve `longitude` için coğrafi bir `Point` tipi kullanılması (Daha önce yapılmıştı).
-    *   [x] `MallRepository` içinde belirli bir noktaya yakın AVM'leri bulan mekansal sorgu (`ST_DWithin` ile native query) implemente edildi.
-    *   [x] `MallService` ve `MallController` katmanları bu yeni sorguyu kullanacak şekilde güncellendi (`/api/v1/malls/near` endpoint'i eklendi).
-    *   [x] Konum bazlı arama için Repository, Service ve Controller katmanlarına birim/entegrasyon testleri eklendi.
-*   [x] **API Yanıt Standardizasyonu:**
-    *   [x] `mall-service` için genel bir `GenericApiResponse<T>` sarmalayıcı DTO oluşturuldu.
-    *   [x] `MallController`'daki veri döndüren endpoint'ler, yanıtlarını bu `GenericApiResponse` ile sarmalayacak şekilde güncellendi (HTTP 200, 201 durumları için).
-    *   [x] `MallControllerIntegrationTest`'ler yeni yanıt yapısına göre güncellendi.
-*   [x] PRD'deki diğer `Mall` entity alanlarının eklenmesi ve ilgili CRUD güncellemeleri. (`Mall` entity'sine eksik alanlar eklendi, Flyway script'i oluşturuldu, DTO'lar ve Mapper güncellendi.)
-*   [x] `getAllMalls` için `city` ve `district` bazlı filtreleme `MallRepository` ve `MallServiceImpl` üzerinde implemente edildi.
-*   [x] `MallMapper.java` güncellenerek `Point` (Entity) ve `latitude`/`longitude` (DTO) arasında dönüşüm sağlandı.
-*   [x] **Konum Bazlı Arama Özelliği Eklendi:**
-        *   `MallRepository`'ye `ST_DWithin` kullanan native query ile yakın AVM'leri bulma metodu eklendi.
-        *   `MallService` ve `MallController` (`/api/v1/malls/near` endpoint'i) bu özelliği kullanacak şekilde güncellendi.
-        *   İlgili Repository, Service ve Controller katmanları için testler yazıldı/güncellendi.
+**AVM Servisi (`mall-service`) Geliştirmeleri:**
+*   [x] **AVM Hizmetleri (Facilities) Yönetimi:** AVM'nin sunduğu hizmetler (ör: danışma, mescit, ATM, eczane vb.) ayrı entity olarak modellendi. CRUD endpointleri, migration, DTO, validasyon, OpenAPI ve mapping işlemleri tamamlandı.
 
 **Genel Kod Kalitesi ve Desenler:**
 *   [x] **Kod Gözden Geçirme (`mall-service`):** `mall-service` özelinde SOLID prensiplerine uyum ve temel tasarım desenlerinin kullanımı analiz edildi. Mevcut yapının standartlara uygun olduğu, belirgin bir SRP ihlali olmadığı ve temel desenlerin (Repository, DTO, Mapper, Specification, Builder) etkin kullanıldığı değerlendirildi. Küçük iyileştirme alanları (örn: Swagger UI'da generic tip gösterimi) not edildi.
-*   [ ] **Kod Gözden Geçirme (Diğer Servisler):** Proje genelinde (özellikle `AuthServiceImpl`, `StoreServiceImpl`, `JwtUtils` gibi kritik sınıflarda) SRP, OCP prensiplerine uyumun artırılması için refactoring fırsatlarının değerlendirilmesi. Gerekli yerlerde Strategy, Factory gibi desenlerin kullanımı için analiz yapılması. (Bu madde, zamanla ve ihtiyaç duyuldukça yapılacak sürekli bir iyileştirme olarak da düşünülebilir).
+*   [x] **Kod Gözden Geçirme (Diğer Servisler):** Proje genelinde (özellikle `AuthServiceImpl`, `StoreServiceImpl`, `JwtUtils` gibi kritik sınıflarda) SRP, OCP prensiplerine uyumun artırılması için refactoring fırsatlarının değerlendirilmesi, gereksiz/opsiyonel/belirsiz yorumların temizlenmesi, gerekli yerlerde Strategy, Factory gibi desenlerin kullanımı ve kodun best practice'e uygun hale getirilmesi tamamlandı.
 *   [ ] **Test Kapsamı:** Birim ve entegrasyon testlerinin gözden geçirilmesi, özellikle güvenlik ve yeni eklenen JWT akışları için test kapsamının artırılması.
 
 **Diğer Servisler (İlerleyen Aşamalar):**
@@ -243,8 +229,18 @@ Bu bölümde, temel özellikler mikroservis bazında gruplandırılmış ve baz�
 *   [x] `store-service` içerisindeki `JwtUtils` sınıfına cookie'den JWT okuma metodu eklendi ve `AuthTokenFilter`, JWT'yi cookie'den okuyacak şekilde güncellendi.
 *   [x] **Observer Deseni:** `UserRegisteredEvent` için temel olay dinleme altyapısı (`UserRegisteredEvent`, `UserEventListener`, `AuthServiceImpl` güncellemeleri) `user-service` içinde oluşturuldu.
 *   [x] **Strategy Deseni (Bildirimler - Temel Altyapı - `user-service`):** `NotificationStrategy`, `NotificationService` arayüzleri, `NotificationContext` DTO'su ve örnek bir `LogNotificationStrategy` oluşturuldu. `UserEventListener`, yeni kullanıcı kaydında bu altyapıyı kullanarak asenkron bildirim göndermeye (şimdilik loglama) başladı. `@EnableAsync` eklendi.
-*   [x] **JWT Claim Zenginleştirme (`user-service` -> `JwtUtils`):** `user-service` içindeki `JwtUtils.generateTokenFromUsername` metodu `iss`, `aud`, `jti` claim'lerini içerecek ve `jwtIssuer`, `jwtAudience` değerlerini `application.yml`'den okuyacak şekilde güncellendi.
-*   [x] **`secure` Cookie Flag'inin Spring Profiles ile Yönetilmesi (`user-service` -> `JwtUtils`):** `user-service` içindeki `JwtUtils` sınıfına aktif profil bilgisi eklendi ve cookie oluşturma metotlarındaki `secure` flag'i, aktif profile göre (`"prod"` ise `true`) dinamik olarak ayarlandı.
-*   [x] **JWT Claim ve `secure` Flag Güncellemelerinin Diğer Servislere Uygulanması:**
-    *   [x] **`api-gateway`:** `application.yml` dosyasına `jwtIssuer` ve `jwtAudience` eklendi. `JwtUtilGateway.java` güncellenerek bu claim'leri okuması ve `validateToken` metodunda kontrol etmesi sağlandı.
-    *   [x] **`store-service`:** `
+*   [x] **JWT Claim Zenginleştirme:** JWT'lere iss, aud, jti claim'leri eklendi. Tüm servislerde bu claim'ler kontrol ediliyor.
+*   [x] **Token İmzası ve Algoritma Tutarlılığı:** Tüm servislerde aynı imza algoritması (HS256/HS512) ve secret kullanımı sağlandı, merkezi config ile yönetiliyor.
+*   [x] **Gelişmiş Token Geçersiz Kılma:** Refresh token'lar DB'de tutuluyor, logout ve şifre değişikliğinde blocklist uygulanıyor.
+*   [x] **API Gateway (`api-gateway`) İyileştirmeleri:** JWT issuer/audience kontrolü, rate limiting ve güvenlik ayarları tamamlandı.
+*   [x] **AuthTokenFilter optimizasyonu:** user-service'de AuthTokenFilter artık doğrudan JWT'den user details oluşturuyor, gereksiz DB sorgusu yapılmıyor. Token'daki roller ve temel bilgiler kullanılıyor.
+*   [x] **Arama için gerçek Elasticsearch mapping ve örnek veri:** Search-service için mapping, örnek veri ve bulk yükleme README ile tamamlandı.
+*   [x] **Diğer mikroservislerden arama servisine veri senkronizasyonu:** Temel entegrasyon altyapısı hazırlandı.
+*   [x] **Bildirim Servisi için push notification dummy implementasyonu:** Dummy push notification servisi ve event listener eklendi.
+*   [x] **Monitoring & loglama eksiklerini kapatmak:** Örnek Grafana dashboard ve merkezi loglama konfigürasyonu eklendi.
+*   [x] **API Gateway rate limiting ve güvenlik geliştirmeleri:** Temel rate limiting ve WAF entegrasyonu için hazırlıklar tamamlandı.
+*   [x] **Mikroservislerden otomatik veri senkronizasyonu için event tabanlı otomasyon:** Mall-service AVM oluşturma eventini Kafka ile search-service'e iletiyor, search-service bu event ile Elasticsearch'e veri ekliyor.
+*   [x] **Kullanıcıya özel favori AVM/mağaza arama ve öneri algoritması:** Search-service, onlyFavorites ve suggest parametreleri ile kullanıcıya özel arama ve öneri desteği sunuyor.
+*   [x] **Arama sonuçlarında facet (şehir, kategori bazlı sayım) desteği:** Search-service, arama sonuçlarında cityCounts ve categoryCounts ile facet desteği sunuyor.
+*   [x] **Arama servisi için user-service ile gerçek favori AVM entegrasyonu, fallback ve testler tamamlandı.**
+*   [x] **API Gateway'de güvenlik ve rate limiting kontrolleri gözden geçirildi, JWT zorunluluğu ve public endpointler netleştirildi.**

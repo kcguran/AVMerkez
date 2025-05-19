@@ -11,6 +11,8 @@ import org.springframework.http.ResponseCookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.util.WebUtils;
 import jakarta.servlet.http.Cookie;
+import com.avmerkez.userservice.redis.TokenBlocklistService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.Key;
 import java.util.Date;
@@ -44,7 +46,10 @@ public class JwtUtils {
     @Value("${spring.profiles.active:dev}") // Aktif profili oku, varsayılan 'dev'
     private String activeProfile;
 
-    private Key key() {
+    @Autowired
+    private TokenBlocklistService tokenBlocklistService;
+
+    public Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
@@ -136,6 +141,12 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken).getBody();
+            String jti = claims.getId();
+            if (jti != null && tokenBlocklistService.isTokenBlocked(jti)) {
+                log.warn("JWT token blocklist'te: {}", jti);
+                return false;
+            }
             Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken);
             return true;
         } catch (MalformedJwtException e) {

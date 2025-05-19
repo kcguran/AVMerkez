@@ -31,4 +31,11 @@ public class GenericApiResponse<T> {
                 .message(message)
                 .build();
     }
+
+    public static <T> GenericApiResponse<T> error(String message) {
+        return GenericApiResponse.<T>builder()
+                .success(false)
+                .message(message)
+                .build();
+    }
 } 

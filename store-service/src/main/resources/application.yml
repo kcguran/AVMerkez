@@ -1,4 +1,4 @@
-# Bu dosya artık çoğunlukla boş olabilir.
+# Sadece lokal geliştirme profilleri veya Config Server'dan gelmeyecek ayarlar için kullanılabilir.
 
 spring:
   profiles:

@@ -41,23 +41,23 @@ public class ReviewControllerTest {
     void setUp() {
         userDetails = new UserDetailsImpl(
                 1L,
-                "testuser",
-                "test@example.com",
-                "password",
+                "keremguran",
+                "kerem.guran@example.com",
+                "hashedPassword",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
         createReviewRequest = new CreateReviewRequest();
-        createReviewRequest.setMallId(1L);
-        createReviewRequest.setRating(5);
-        createReviewRequest.setComment("Harika bir AVM, çok beğendim!");
+        createReviewRequest.setMallId(10L);
+        createReviewRequest.setRating(4);
+        createReviewRequest.setComment("Geniş otoparkı ve çocuk oyun alanı ile aileler için çok uygun bir AVM.");
 
         reviewDto = ReviewDto.builder()
-                .id(1L)
+                .id(100L)
                 .userId(1L)
-                .mallId(1L)
-                .rating(5)
-                .comment("Harika bir AVM, çok beğendim!")
+                .mallId(10L)
+                .rating(4)
+                .comment("Geniş otoparkı ve çocuk oyun alanı ile aileler için çok uygun bir AVM.")
                 .createdAt(Instant.now())
                 .approvalStatus(ApprovalStatus.PENDING)
                 .build();

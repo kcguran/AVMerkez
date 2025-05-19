@@ -52,6 +52,9 @@ public class Mall {
     @Column
     private Integer popularityScore;
 
+    @OneToMany(mappedBy = "mall", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private java.util.List<Facility> facilities = new java.util.ArrayList<>();
+
     // PRD'deki diğer alanlar eklenecek (latitude, longitude, workingHours, website, phone etc.)
     // private Double latitude;
     // private Double longitude;

@@ -54,19 +54,13 @@ public class GlobalExceptionHandler {
 
     // Genel beklenmeyen hatalar için
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGlobalException(Exception ex, WebRequest request) {
-        // Log the actual exception
-        // log.error("Unexpected error occurred for request: {}", request.getDescription(false), ex);
-
+    public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "An unexpected error occurred");
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         body.put("path", request.getDescription(false).replace("uri=", ""));
-        // TODO: Gerçek hata detayı loglanmalı, kullanıcıya gösterilmemeli
-        // log.error("Unexpected error", ex);
-
+        body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 } 

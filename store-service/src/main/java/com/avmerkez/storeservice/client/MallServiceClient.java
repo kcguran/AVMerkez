@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * Feign client interface for communicating with mall-service.
  */
-@FeignClient(name = "mall-service", path = "/api/v1/malls") // service-id from Eureka and base path
+@FeignClient(name = "mall-service", path = "/api/v1/malls", fallback = MallServiceClient.Fallback.class)
 public interface MallServiceClient {
 
     /**
@@ -21,6 +21,13 @@ public interface MallServiceClient {
      */
     @RequestMapping(method = RequestMethod.HEAD, value = "/{mallId}/exists")
     ResponseEntity<Void> checkMallExists(@PathVariable("mallId") Long mallId);
+
+    class Fallback implements MallServiceClient {
+        @Override
+        public ResponseEntity<Void> checkMallExists(Long mallId) {
+            throw new IllegalStateException("Mall service is unavailable (fallback)");
+        }
+    }
 
     // Alternatively, return MallDto if needed later:
     // @GetMapping("/{mallId}")

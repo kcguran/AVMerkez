@@ -27,7 +27,7 @@ public class CreateReviewRequest {
     private Integer rating;
     
     @Size(min = 10, max = 1000, message = "Yorum en az 10, en fazla 1000 karakter olmalıdır")
-    @Schema(description = "Yazılan yorum metni", example = "Bu AVM'de çok güzel mağazalar var ve otopark imkanı çok iyi.")
+    @Schema(description = "Yazılan yorum metni", example = "Geniş otoparkı ve çocuk oyun alanı ile aileler için çok uygun bir AVM.")
     private String comment;
     
     @AssertTrue(message = "AVM veya mağaza ID'si belirtilmelidir, ikisi birden veya hiçbiri belirtilmemelidir")

@@ -7,15 +7,19 @@ import com.avmerkez.mallservice.entity.Mall;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-18T00:51:15+0300",
+    date = "2025-05-19T03:09:14+0300",
     comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.v20250514-1000, environment: Java 21.0.7 (Eclipse Adoptium)"
 )
 @Component
 public class MallMapperImpl implements MallMapper {
+
+    @Autowired
+    private FacilityMapper facilityMapper;
 
     @Override
     public MallDto toMallDto(Mall mall) {
@@ -25,6 +29,7 @@ public class MallMapperImpl implements MallMapper {
 
         MallDto mallDto = new MallDto();
 
+        mallDto.setFacilities( facilityMapper.toFacilityDtoList( mall.getFacilities() ) );
         mallDto.setAddress( mall.getAddress() );
         mallDto.setCity( mall.getCity() );
         mallDto.setDistrict( mall.getDistrict() );

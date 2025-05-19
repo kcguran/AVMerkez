@@ -40,5 +40,8 @@ public class MallDto {
     @Schema(description = "Contact phone number for the mall", example = "+90 312 123 4567", nullable = true)
     private String phoneNumber;
 
+    @Schema(description = "AVM'nin sunduğu hizmetler (ör: danışma, mescit, ATM vb.)", nullable = true)
+    private java.util.List<FacilityDto> facilities;
+
     // İhtiyaç duyulan diğer alanlar eklenebilir (adres vb.)
 } 

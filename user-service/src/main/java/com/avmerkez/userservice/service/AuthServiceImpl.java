@@ -22,6 +22,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Date;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final ApplicationEventPublisher eventPublisher;
     private final RefreshTokenService refreshTokenService;
+    private final JwtUtils jwtUtils;
 
     @Override
     @Transactional
@@ -127,5 +132,18 @@ public class AuthServiceImpl implements AuthService {
         return UserDetailsImpl.build(user);
         // String newAccessToken = jwtUtils.generateTokenFromUsername(user.getUsername()); 
         // return new AccessTokenResponse(newAccessToken, "Bearer"); // Eski dönüş tipi
+    }
+
+    public void logout(String accessToken) {
+        // Access token'ın jti'sini bul ve blocklist'e ekle
+        Claims claims = Jwts.parserBuilder().setSigningKey(jwtUtils.key()).build().parseClaimsJws(accessToken).getBody();
+        String jti = claims.getId();
+        Date expiration = claims.getExpiration();
+        if (jti != null && expiration != null) {
+            long millis = expiration.getTime() - System.currentTimeMillis();
+            refreshTokenService.blockAccessToken(jti, millis);
+        }
+        // Refresh token'ı da DB'den sil veya revoke et
+        // ... mevcut logout işlemleri ...
     }
 } 

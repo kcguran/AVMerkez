@@ -16,8 +16,7 @@ public class GenericApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
-    // Hata durumları için ayrı bir ErrorResponse nesnesi kullanılabilir veya buraya eklenebilir.
-    // Şimdilik GlobalExceptionHandler kendi ErrorResponse formatını kullanmaya devam edecek.
+    // Hata durumları için ayrı bir ErrorResponse nesnesi kullanılabilir.
 
     public static <T> GenericApiResponse<T> success(T data) {
         return GenericApiResponse.<T>builder()
@@ -34,6 +33,11 @@ public class GenericApiResponse<T> {
                 .build();
     }
 
-    // Hata durumları için de static factory metotları eklenebilir
-    // public static ApiResponse<Object> error(String message, ...) {}
+    // Hata durumları için de static factory metodu
+    public static <T> GenericApiResponse<T> error(String message) {
+        return GenericApiResponse.<T>builder()
+                .success(false)
+                .message(message)
+                .build();
+    }
 } 

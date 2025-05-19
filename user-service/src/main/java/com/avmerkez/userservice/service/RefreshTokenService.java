@@ -6,10 +6,12 @@ import com.avmerkez.userservice.exception.TokenRefreshException;
 import com.avmerkez.userservice.repository.RefreshTokenRepository;
 import com.avmerkez.userservice.repository.UserRepository;
 import com.avmerkez.userservice.security.JwtUtils;
+import com.avmerkez.userservice.redis.TokenBlocklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -25,6 +27,8 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
+    @Autowired
+    private TokenBlocklistService tokenBlocklistService;
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
@@ -79,5 +83,9 @@ public class RefreshTokenService {
             token.setRevoked(true);
             refreshTokenRepository.save(token);
         });
+    }
+
+    public void blockAccessToken(String jti, long expirationMillis) {
+        tokenBlocklistService.blockToken(jti, expirationMillis);
     }
 } 

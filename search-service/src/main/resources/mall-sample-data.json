@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "İstanbul Cevahir AVM",
+    "city": "İstanbul",
+    "district": "Şişli",
+    "description": "Türkiye'nin en büyük alışveriş merkezlerinden biri.",
+    "location": "41.0605,28.9871"
+  },
+  {
+    "id": 2,
+    "name": "Forum Bornova",
+    "city": "İzmir",
+    "district": "Bornova",
+    "description": "Ege'nin en popüler AVM'lerinden.",
+    "location": "38.4692,27.2222"
+  }
+] 

@@ -26,8 +26,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
-    @Autowired
-    private JwtUtilGateway jwtUtil;
+    private final JwtUtilGateway jwtUtilGateway;
 
     // Public endpoints that do not require authentication
     public static final List<String> openApiEndpoints = List.of(
@@ -45,13 +44,17 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     private Predicate<ServerHttpRequest> isSecured = request -> openApiEndpoints.stream()
             .noneMatch(uri -> request.getURI().getPath().contains(uri));
 
+    public AuthenticationFilter(JwtUtilGateway jwtUtilGateway) {
+        this.jwtUtilGateway = jwtUtilGateway;
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         logger.info("Request received: {} {}", request.getMethod(), request.getURI().getPath());
 
         if (isSecured.test(request)) {
-            String token = jwtUtil.getJwtFromCookies(request);
+            String token = jwtUtilGateway.getJwtFromCookies(request);
 
             if (token == null) {
                 logger.warn("JWT cookie (avm_jwt) is missing for secured endpoint: {}", request.getURI().getPath());
@@ -61,14 +64,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             logger.debug("Token extracted from cookie: {}", token);
 
             try {
-                if (!jwtUtil.validateToken(token)) {
+                if (!jwtUtilGateway.validateToken(token)) {
                     logger.warn("JWT token validation failed for path: {}", request.getURI().getPath());
                     return this.onError(exchange, "JWT Token is not valid", HttpStatus.UNAUTHORIZED);
                 }
 
-                Claims claims = jwtUtil.getAllClaimsFromToken(token);
+                Claims claims = jwtUtilGateway.getAllClaimsFromToken(token);
                 String username = claims.getSubject();
-                List<String> roles = jwtUtil.getRolesFromToken(token);
+                List<String> roles = jwtUtilGateway.getRolesFromToken(token);
                 
                 logger.debug("Token validated for user: {}, roles: {}", username, roles);
 

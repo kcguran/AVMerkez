@@ -1,0 +1,246 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # Mall Service Routes
+        - id: mall-service
+          uri: lb://mall-service
+          predicates:
+            - Path=/api/v1/malls/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: mall-service-facilities
+          uri: lb://mall-service
+          predicates:
+            - Path=/api/v1/facilities/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # Store Service Routes
+        - id: store-service
+          uri: lb://store-service
+          predicates:
+            - Path=/api/v1/stores/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: store-service-categories
+          uri: lb://store-service
+          predicates:
+            - Path=/api/v1/categories/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: store-service-brands
+          uri: lb://store-service
+          predicates:
+            - Path=/api/v1/brands/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # User Service Routes
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: user-service-users
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: user-service-profiles
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/profiles/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: user-service-favorites
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/favorites/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # Review Service Routes
+        - id: review-service
+          uri: lb://review-service
+          predicates:
+            - Path=/api/v1/reviews/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # Campaign-Event Service Routes
+        - id: campaign-event-service-campaigns
+          uri: lb://campaign-event-service
+          predicates:
+            - Path=/api/v1/campaigns/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: campaign-event-service-events
+          uri: lb://campaign-event-service
+          predicates:
+            - Path=/api/v1/events/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # Search Service Routes
+        - id: search-service
+          uri: lb://search-service
+          predicates:
+            - Path=/api/v1/search/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+
+        # Notification Service Routes
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # OpenAPI Documentation Routes
+        - id: api-docs
+          uri: lb://api-gateway
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<service>.*), /${service}/v3/api-docs
+
+        # Actuator Routes
+        - id: actuator
+          uri: lb://api-gateway
+          predicates:
+            - Path=/actuator/**
+
+# Rate Limiter Yapılandırması
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 1s
+    instances:
+      default:
+        baseConfig: default
+      auth:
+        limitForPeriod: 3
+        limitRefreshPeriod: 1s
+      search:
+        limitForPeriod: 20
+        limitRefreshPeriod: 1s
+
+# Kimlik Doğrulama ve Güvenlik Ayarları
+avmerkez:
+  security:
+    public-paths:
+      - /api/v1/auth/**
+      - /api/v1/malls
+      - /api/v1/malls/*/stores
+      - /api/v1/malls/*/events
+      - /api/v1/malls/*/campaigns
+      - /api/v1/search/**
+      - /api/v1/categories/**
+      - /api/v1/brands/**
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /actuator/**
+
+# Request Rate Limiter için Key Resolver ayarları
+request-rate-limiter:
+  key-resolver: "#{@ipKeyResolver}"
+
+# Logging Yapılandırması  
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    reactor.netty: INFO
+    com.avmerkez.apigateway: DEBUG 

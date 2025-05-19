@@ -1,8 +1,6 @@
-# Server port for the Config Server
 server:
-  port: 8888 # Default Config Server port
+  port: 8888
 
-# Spring Application Name
 spring:
   application:
     name: config-server
@@ -10,21 +8,11 @@ spring:
     config:
       server:
         git:
-          # !!! KENDİ DEPO ADRESİNİZLE DEĞİŞTİRİN !!!
-          uri: https://github.com/kcguran/avmerkez-config-repo.git # <-- BURAYI GÜNCELLEYİN
-          # Optional: If the repository is private
-          # username: your-git-username
-          # password: your-git-password or token
-          # Optional: Search paths within the repository
-          # search-paths: 'config/{application}, config/shared'
-          default-label: main # Default branch to use
-          # Optional: Clone on start to fetch config immediately
-          # clone-on-start: true
-        # Optional: Enable native profile for local file system backend (instead of Git)
-        # native:
-        #   search-locations: classpath:/config, file:./config
+          uri: https://github.com/kcguran/avmerkez-config-repo.git
+          default-label: main 
+        native:
+          search-locations: classpath:/config, file:./config
 
-# Eureka Client Configuration (To register with Discovery Server)
 eureka:
   client:
     service-url:

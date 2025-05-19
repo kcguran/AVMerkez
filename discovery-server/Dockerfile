@@ -1,18 +1,15 @@
-# Use a standard OpenJDK 17 slim image
-FROM openjdk:17-jdk-slim
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory inside the container
+# 1. Build aşaması
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY . .
+WORKDIR /app/discovery-server
+RUN mvn -f /app/discovery-server/pom.xml clean package -DskipTests
 
-# Argument to specify the JAR file name (defined in pom.xml)
-# Maven repackage goal typically creates target/<artifactId>-<version>.jar
-ARG JAR_FILE=target/*.jar
-
-# Copy the JAR file from the build context to the container
-COPY ${JAR_FILE} application.jar
+# 2. Run aşaması
+FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /app
+COPY --from=build /app/discovery-server/target/*.jar application.jar
+RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # Expose the port the application runs on (port will be defined in application.yml or overridden by Docker Compose)
 # We don't strictly need EXPOSE here as Docker Compose handles port mapping,

@@ -1,5 +1,3 @@
-# Bootstrap configurations - loaded before application.yml
-
 spring:
   application:
     name: store-service

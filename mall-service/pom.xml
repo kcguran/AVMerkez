@@ -168,6 +168,12 @@
             <!-- Check Spring Boot parent POM for managed version or specify explicitly -->
         </dependency>
 
+        <!-- Spring Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
     </dependencies>
 
     <!-- MapStruct ve Lombok için Annotation Processor yapılandırması -->

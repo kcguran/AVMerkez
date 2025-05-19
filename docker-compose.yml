@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15
+    image: postgis/postgis:15-3.3
     container_name: postgres_db
     environment:
       POSTGRES_USER: user
@@ -23,7 +23,9 @@ services:
 
   # Discovery Server (Eureka)
   discovery-server:
-    build: ./discovery-server
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
     container_name: discovery-server
     ports:
       - "8761:8761"
@@ -38,29 +40,31 @@ services:
 
   # Config Server
   config-server:
-    build: ./config-server
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
     container_name: config-server
     ports:
       - "8888:8888"
-    volumes:
-      - ./avmerkez-config-repo:/config
     environment:
-      - SPRING_PROFILES_ACTIVE=native
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
     depends_on:
       discovery-server:
         condition: service_healthy
     networks:
       - avmerkez-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8888/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   # API Gateway
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8080:8080"
@@ -88,11 +92,12 @@ services:
 
   # Mall Service
   mall-service:
-    image: eclipse-temurin:17-jdk
+    build:
+      context: .
+      dockerfile: mall-service/Dockerfile
     container_name: mall-service
     ports:
       - "9090:9090"
-    command: echo "Mall Service placeholder - service will be implemented later"
     depends_on:
       - postgres
     networks:
@@ -100,11 +105,12 @@ services:
 
   # Store Service
   store-service:
-    image: eclipse-temurin:17-jdk
+    build:
+      context: .
+      dockerfile: store-service/Dockerfile
     container_name: store-service
     ports:
       - "9091:9091"
-    command: echo "Store Service placeholder - service will be implemented later"
     depends_on:
       - postgres
     networks:
@@ -112,22 +118,24 @@ services:
 
   # User Service
   user-service:
-    image: eclipse-temurin:17-jdk
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
     container_name: user-service
     ports:
       - "8083:8083"
-    command: echo "User Service placeholder - service will be implemented later"
     depends_on:
       - postgres
     networks:
       - avmerkez-network
 
   review-service:
-    image: eclipse-temurin:17-jdk
+    build:
+      context: .
+      dockerfile: review-service/Dockerfile
     container_name: review-service
     ports:
       - "8085:8085"
-    command: echo "Review Service placeholder - service will be implemented later"
     depends_on:
       - postgres
     networks:
@@ -163,21 +171,24 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - avmerkez-network
 
   search-service:
-    image: eclipse-temurin:17-jdk
+    build:
+      context: .
+      dockerfile: search-service/Dockerfile
     container_name: search-service
     ports:
       - "8086:8086"
-    command: echo "Search Service placeholder - service will be implemented later"
     depends_on:
       - elasticsearch
       - kafka

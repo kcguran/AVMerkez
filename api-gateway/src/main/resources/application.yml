@@ -2,12 +2,11 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   redis:
-    host: localhost
-    port: 6379
-  cloud:
-    gateway:
-      routes:
-        - id: search-service
-          uri: lb://search-service
-          predicates:
-            - Path=/api/v1/search/**
+    host: ${SPRING_DATA_REDIS_HOST:localhost}
+    port: ${SPRING_DATA_REDIS_PORT:6379}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
+    org.springframework.web: INFO

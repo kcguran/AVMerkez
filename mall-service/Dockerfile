@@ -1,17 +1,13 @@
-# Use a standard OpenJDK 17 slim image
-FROM openjdk:17-jdk-slim
-
-# Install curl and git for healthcheck and config repo access
-RUN apt-get update && apt-get install -y curl git --no-install-recommends && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory inside the container
+# 1. Build aşaması
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY . .
+WORKDIR /app/mall-service
+RUN mvn -f /app/mall-service/pom.xml clean package -DskipTests
 
-# Argument to specify the JAR file name (defined in pom.xml)
-ARG JAR_FILE=target/*.jar
-
-# Copy the JAR file from the build context to the container
-COPY ${JAR_FILE} application.jar
-
-# Command to run the application
+# 2. Run aşaması
+FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /app
+COPY --from=build /app/mall-service/target/*.jar application.jar
+RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["java", "-jar", "/app/application.jar"] 

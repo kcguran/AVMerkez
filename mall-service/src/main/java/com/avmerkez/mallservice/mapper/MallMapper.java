@@ -23,9 +23,6 @@ import java.util.List;
         uses = {FacilityMapper.class})
 public interface MallMapper {
 
-    // SRID 4326 (WGS 84) için GeometryFactory.
-    // Her dönüşümde yeniden oluşturulacak.
-    // Performans kritikse, bir Spring Bean olarak enjekte edilebilir.
     default GeometryFactory getGeometryFactory() {
         return new GeometryFactory(new PrecisionModel(), 4326);
     }

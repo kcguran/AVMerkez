@@ -28,4 +28,20 @@ public class MallSpecification {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+    
+    /**
+     * Şehir adına göre filtreleme yapar
+     */
+    public static Specification<Mall> cityEquals(String city) {
+        return (root, query, criteriaBuilder) -> 
+            criteriaBuilder.equal(criteriaBuilder.lower(root.get("city")), city.toLowerCase());
+    }
+    
+    /**
+     * İlçe adına göre filtreleme yapar
+     */
+    public static Specification<Mall> districtEquals(String district) {
+        return (root, query, criteriaBuilder) -> 
+            criteriaBuilder.equal(criteriaBuilder.lower(root.get("district")), district.toLowerCase());
+    }
 } 

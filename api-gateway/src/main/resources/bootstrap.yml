@@ -1,12 +1,8 @@
-# Bootstrap configurations - loaded before application.yml
-
 spring:
   application:
-    # Service name - MUST match the config file name (api-gateway.yml) and Eureka ID
     name: api-gateway
   cloud:
     config:
-      # URI of the Config Server
       uri: ${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
       fail-fast: true
       retry:
@@ -14,5 +10,4 @@ spring:
         max-interval: 2000
         max-attempts: 6
   config:
-    # Config Server'dan konfigürasyonları içe aktar
     import: "configserver:${spring.cloud.config.uri}"
